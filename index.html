@@ -7,266 +7,148 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0f0f13;
-    --surface: #1a1a24;
-    --card: #22222f;
-    --accent: #ff6b6b;
-    --accent2: #ffd93d;
-    --text: #f0f0f5;
-    --muted: #888;
-    --green: #6bcb77;
-    --radius: 16px;
+    --bg: #0f0f13; --surface: #1a1a24; --card: #22222f;
+    --accent: #ff6b6b; --accent2: #ffd93d; --text: #f0f0f5;
+    --muted: #888; --green: #6bcb77; --radius: 16px;
   }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
 
-  /* NAV */
-  nav {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    background: var(--surface);
-    border-top: 1px solid #333;
-    position: fixed;
-    bottom: 0;
-    z-index: 100;
-  }
-  .nav-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    color: var(--muted);
-    padding: 12px 0 10px;
-    font-size: 10px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    transition: color 0.2s;
-  }
-  .nav-btn.active { color: var(--accent); }
-  .nav-btn .icon { font-size: 22px; }
+  nav { width:100%; max-width:480px; display:flex; background:var(--surface); border-top:1px solid #333; position:fixed; bottom:0; z-index:100; }
+  .nav-btn { flex:1; background:none; border:none; color:var(--muted); padding:12px 0 10px; font-size:10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:color .2s; }
+  .nav-btn.active { color:var(--accent); }
+  .nav-btn .icon { font-size:21px; }
 
-  /* PAGES */
-  .page { display: none; width: 100%; max-width: 480px; padding: 16px 16px 80px; min-height: 100vh; }
-  .page.active { display: block; }
+  .page { display:none; width:100%; max-width:480px; padding:16px 16px 80px; }
+  .page.active { display:block; }
 
-  /* BATTLE PAGE */
-  #battle-page { padding: 0 0 80px; }
-  #battle-page.active { display: flex; flex-direction: column; align-items: center; }
+  /* BATTLE */
+  #battle-page { padding:0 0 80px; }
+  #battle-page.active { display:flex; flex-direction:column; align-items:center; }
+  .battle-header { text-align:center; padding:20px 16px 0; }
+  .battle-header h2 { font-size:22px; font-weight:800; }
+  .battle-header p { color:var(--muted); font-size:13px; margin-top:4px; }
+  .streak-bar { display:flex; gap:8px; padding:10px 24px; align-items:center; justify-content:center; }
+  .streak-dot { width:14px; height:14px; border-radius:50%; background:#333; transition:background .3s,transform .3s; }
+  .streak-dot.filled { background:var(--accent2); transform:scale(1.2); }
+  .streak-label { font-size:12px; color:var(--muted); margin-left:4px; }
+  .vs-label { font-size:26px; font-weight:900; color:var(--accent2); letter-spacing:2px; }
+  .battle-arena { display:flex; gap:12px; width:100%; padding:0 16px; justify-content:center; align-items:stretch; margin:6px 0 16px; }
 
-  .battle-header { text-align: center; padding: 20px 16px 0; }
-  .battle-header h2 { font-size: 22px; font-weight: 800; }
-  .battle-header p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .food-card { flex:1; max-width:185px; background:var(--card); border-radius:var(--radius); padding:18px 10px; text-align:center; cursor:pointer; border:2px solid transparent; transition:border-color .2s,transform .15s; user-select:none; position:relative; overflow:hidden; }
+  .food-card:hover { border-color:var(--accent); transform:translateY(-3px); }
+  .food-card:active { transform:scale(0.96); }
+  .food-card.champion-card { border-color:var(--accent2); }
+  .food-card .badge { position:absolute; top:8px; left:50%; transform:translateX(-50%); background:var(--accent2); color:#000; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+  .food-card .emoji-big { font-size:54px; display:block; margin:12px 0 10px; }
+  .food-card .name { font-size:16px; font-weight:700; margin-bottom:6px; }
+  .food-card .elo-tag { font-size:13px; color:var(--accent2); font-weight:600; }
+  .food-card .cat-tag { font-size:11px; color:var(--muted); margin-top:4px; }
+  .food-card .wins-tag { font-size:12px; color:var(--green); margin-top:6px; font-weight:600; }
+  .skip-btn { background:none; border:1px solid #333; color:var(--muted); padding:8px 22px; border-radius:20px; cursor:pointer; font-size:13px; transition:border-color .2s,color .2s; }
+  .skip-btn:hover { border-color:#555; color:var(--text); }
+  .battle-status { font-size:12px; color:var(--muted); margin-top:10px; }
 
-  /* Win streak bar */
-  .streak-bar {
-    display: flex;
-    gap: 8px;
-    padding: 10px 24px;
-    align-items: center;
-    justify-content: center;
-  }
-  .streak-dot {
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: #333;
-    transition: background 0.3s, transform 0.3s;
-  }
-  .streak-dot.filled { background: var(--accent2); transform: scale(1.2); }
-  .streak-label { font-size: 12px; color: var(--muted); margin-left: 4px; }
+  /* CHAMPION */
+  .champion-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:200; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px; }
+  .champion-overlay.show { display:flex; }
+  .champion-crown { font-size:72px; animation:bounce .6s ease infinite alternate; }
+  @keyframes bounce { to { transform:translateY(-10px); } }
+  .champion-name { font-size:32px; font-weight:900; margin:12px 0 4px; }
+  .champion-sub { color:var(--muted); font-size:15px; margin-bottom:24px; }
+  .btn-row { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .btn-primary { background:var(--accent); color:#fff; border:none; border-radius:24px; padding:12px 28px; font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+  .btn-primary:hover { background:#ff5252; }
+  .btn-ghost { background:none; color:var(--text); border:1px solid #555; border-radius:24px; padding:12px 28px; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-ghost:hover { border-color:#888; }
 
-  .vs-label {
-    font-size: 26px; font-weight: 900;
-    color: var(--accent2);
-    letter-spacing: 2px;
-  }
-
-  .battle-arena {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    padding: 0 16px;
-    justify-content: center;
-    align-items: stretch;
-    margin: 6px 0 16px;
-  }
-
-  .food-card {
-    flex: 1;
-    max-width: 185px;
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 18px 10px;
-    text-align: center;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-    user-select: none;
-    position: relative;
-  }
-  .food-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-  .food-card:active { transform: scale(0.96); }
-  .food-card.champion-card { border-color: var(--accent2); }
-
-  .food-card .badge {
-    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-    background: var(--accent2); color: #000;
-    font-size: 10px; font-weight: 800;
-    padding: 2px 8px; border-radius: 10px;
-    white-space: nowrap;
-  }
-  .food-card .emoji-big { font-size: 54px; display: block; margin: 12px 0 10px; }
-  .food-card .name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-  .food-card .elo-tag { font-size: 13px; color: var(--accent2); font-weight: 600; }
-  .food-card .cat-tag { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .food-card .wins-tag { font-size: 12px; color: var(--green); margin-top: 6px; font-weight: 600; }
-
-  /* Animations handled by Web Animations API in JS */
-
-  /* Champion overlay */
-  .champion-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 200;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 32px;
-  }
-  .champion-overlay.show { display: flex; }
-  .champion-crown { font-size: 72px; animation: bounce 0.6s ease infinite alternate; }
-  @keyframes bounce { to { transform: translateY(-10px); } }
-  .champion-name { font-size: 32px; font-weight: 900; margin: 12px 0 4px; }
-  .champion-sub { color: var(--muted); font-size: 15px; margin-bottom: 24px; }
-  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-  .btn-primary {
-    background: var(--accent); color: #fff; border: none;
-    border-radius: 24px; padding: 12px 28px;
-    font-size: 15px; font-weight: 700; cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .btn-primary:hover { background: #ff5252; }
-  .btn-primary:active { transform: scale(0.97); }
-  .btn-ghost {
-    background: none; color: var(--text); border: 1px solid #555;
-    border-radius: 24px; padding: 12px 28px;
-    font-size: 15px; font-weight: 600; cursor: pointer;
-    transition: border-color 0.2s;
-  }
-  .btn-ghost:hover { border-color: #888; }
-
-  .skip-btn {
-    background: none; border: 1px solid #333; color: var(--muted);
-    padding: 8px 22px; border-radius: 20px; cursor: pointer;
-    font-size: 13px; transition: border-color 0.2s, color 0.2s;
-  }
-  .skip-btn:hover { border-color: #555; color: var(--text); }
-  .battle-status { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  /* SHARED */
+  h2 { font-size:20px; font-weight:700; margin-bottom:16px; }
+  .section-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:20px 0 10px; }
 
   /* RANKING */
-  h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
-  .ranking-list { display: flex; flex-direction: column; gap: 10px; }
-  .rank-item {
-    background: var(--card); border-radius: var(--radius);
-    padding: 12px 16px; display: flex; align-items: center; gap: 14px;
-  }
-  .rank-num { font-size: 18px; font-weight: 900; color: var(--muted); width: 28px; text-align: center; }
-  .rank-emoji { font-size: 32px; }
-  .rank-info { flex: 1; }
-  .rank-name { font-size: 15px; font-weight: 600; }
-  .rank-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .rank-elo { font-size: 16px; font-weight: 700; color: var(--accent2); }
+  .ranking-list { display:flex; flex-direction:column; gap:10px; }
+  .rank-item { background:var(--card); border-radius:var(--radius); padding:12px 16px; display:flex; align-items:center; gap:14px; }
+  .rank-num { font-size:18px; font-weight:900; color:var(--muted); width:28px; text-align:center; }
+  .rank-emoji { font-size:32px; }
+  .rank-info { flex:1; }
+  .rank-name { font-size:15px; font-weight:600; }
+  .rank-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+  .rank-elo { font-size:16px; font-weight:700; color:var(--accent2); }
 
-  /* STATS */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .stat-card { background: var(--card); border-radius: var(--radius); padding: 16px; text-align: center; }
-  .stat-card .val { font-size: 28px; font-weight: 800; color: var(--accent); }
-  .stat-card .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .section-title {
-    font-size: 13px; font-weight: 700; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 10px;
-  }
-  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
-  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  .bar-label { width: 72px; text-align: right; color: var(--muted); font-size: 12px; }
-  .bar-track { flex: 1; background: #333; border-radius: 6px; height: 18px; overflow: hidden; }
-  .bar-fill {
-    height: 100%; border-radius: 6px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    transition: width 0.6s ease;
-    display: flex; align-items: center; padding-left: 8px;
-    font-size: 11px; font-weight: 700; color: #000; white-space: nowrap;
-  }
+  /* ANALYSIS */
+  .analysis-card { background:var(--card); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
+  .analysis-card h3 { font-size:15px; font-weight:700; margin-bottom:12px; }
+
+  /* Health meter */
+  .health-meter-wrap { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .health-meter-track { flex:1; background:#333; border-radius:8px; height:22px; overflow:hidden; position:relative; }
+  .health-meter-fill { height:100%; border-radius:8px; transition:width .8s ease; display:flex; align-items:center; justify-content:flex-end; padding-right:10px; font-size:12px; font-weight:700; color:#000; }
+  .health-score-num { font-size:28px; font-weight:900; min-width:44px; text-align:right; }
+  .health-grade { font-size:13px; color:var(--muted); margin-top:4px; }
+  .health-breakdown { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+  .hb-row { display:flex; align-items:center; gap:8px; font-size:13px; }
+  .hb-label { width:60px; text-align:right; color:var(--muted); font-size:11px; }
+  .hb-track { flex:1; background:#2a2a2a; border-radius:4px; height:10px; overflow:hidden; }
+  .hb-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+
+  /* Preference radar (CSS-based) */
+  .radar-wrap { display:flex; justify-content:center; margin:8px 0; }
+  canvas.radar { display:block; }
+
+  /* Preference bars */
+  .pref-bars { display:flex; flex-direction:column; gap:8px; }
+  .pref-row { display:flex; align-items:center; gap:8px; }
+  .pref-label { width:64px; text-align:right; font-size:12px; color:var(--muted); }
+  .pref-track { flex:1; background:#2a2a2a; border-radius:6px; height:16px; overflow:hidden; }
+  .pref-fill { height:100%; border-radius:6px; background:linear-gradient(90deg,#7b61ff,#bb86fc); transition:width .7s ease; display:flex; align-items:center; padding-left:6px; font-size:10px; font-weight:700; color:#fff; }
+  .pref-val { font-size:12px; color:var(--accent2); width:36px; text-align:left; }
+
+  /* Prediction */
+  .predict-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .predict-card { background:linear-gradient(135deg,#1e1e2e,#2a2040); border-radius:14px; padding:14px 10px; text-align:center; border:1px solid #333; }
+  .predict-card.top { border-color:var(--accent2); background:linear-gradient(135deg,#2a2010,#332810); }
+  .predict-card .meal-time { font-size:10px; color:var(--muted); margin-bottom:4px; }
+  .predict-card .pred-emoji { font-size:38px; display:block; margin:6px 0; }
+  .predict-card .pred-name { font-size:13px; font-weight:700; }
+  .predict-card .pred-reason { font-size:10px; color:var(--muted); margin-top:4px; line-height:1.3; }
+
+  /* Mood buttons */
+  .mood-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .mood-btn { background:var(--card); border:1px solid #444; color:var(--text); border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer; transition:border-color .2s,background .2s; }
+  .mood-btn.active { border-color:var(--accent2); background:#2a2010; color:var(--accent2); }
 
   /* ADD FOOD */
-  .form-group { margin-bottom: 14px; }
-  .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-  .form-group input, .form-group select {
-    width: 100%; background: var(--card); border: 1px solid #333;
-    border-radius: 10px; padding: 10px 14px; color: var(--text);
-    font-size: 15px; outline: none; transition: border-color 0.2s;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-  .form-group select option { background: var(--card); }
-  .emoji-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-  .emoji-btn {
-    font-size: 24px; padding: 6px; background: var(--card);
-    border: 2px solid transparent; border-radius: 10px; cursor: pointer; transition: border-color 0.2s;
-  }
-  .emoji-btn.selected { border-color: var(--accent); background: #2a1a1f; }
-  .add-btn {
-    width: 100%; background: var(--accent); color: #fff; border: none;
-    border-radius: var(--radius); padding: 14px; font-size: 16px; font-weight: 700;
-    cursor: pointer; transition: background 0.2s, transform 0.1s;
-  }
-  .add-btn:hover { background: #ff5252; }
-  .add-btn:active { transform: scale(0.98); }
+  .form-group { margin-bottom:14px; }
+  .form-group label { display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+  .form-group input, .form-group select { width:100%; background:var(--card); border:1px solid #333; border-radius:10px; padding:10px 14px; color:var(--text); font-size:15px; outline:none; transition:border-color .2s; }
+  .form-group input:focus, .form-group select:focus { border-color:var(--accent); }
+  .form-group select option { background:var(--card); }
+  .emoji-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .emoji-btn { font-size:24px; padding:6px; background:var(--card); border:2px solid transparent; border-radius:10px; cursor:pointer; transition:border-color .2s; }
+  .emoji-btn.selected { border-color:var(--accent); background:#2a1a1f; }
+  .add-btn { width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:14px; font-size:16px; font-weight:700; cursor:pointer; }
+  .add-btn:hover { background:#ff5252; }
 
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 90px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--green); color: #000; padding: 10px 20px;
-    border-radius: 20px; font-weight: 700; font-size: 14px;
-    opacity: 0; transition: opacity 0.3s, transform 0.3s; z-index: 300;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--green); color:#000; padding:10px 20px; border-radius:20px; font-weight:700; font-size:14px; opacity:0; transition:opacity .3s,transform .3s; z-index:300; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:#333; border-radius:4px; }
 </style>
 </head>
 <body>
 
-<!-- BATTLE PAGE -->
+<!-- BATTLE -->
 <div id="battle-page" class="page active">
   <div class="battle-header">
     <h2>🍱 FoodBattle</h2>
     <p>点击你更想吃的！胜者留场，连赢 5 次出冠军</p>
   </div>
-
   <div class="streak-bar" id="streak-bar">
-    <div class="streak-dot" id="dot0"></div>
-    <div class="streak-dot" id="dot1"></div>
-    <div class="streak-dot" id="dot2"></div>
-    <div class="streak-dot" id="dot3"></div>
+    <div class="streak-dot" id="dot0"></div><div class="streak-dot" id="dot1"></div>
+    <div class="streak-dot" id="dot2"></div><div class="streak-dot" id="dot3"></div>
     <div class="streak-dot" id="dot4"></div>
     <span class="streak-label" id="streak-label">0 / 5</span>
   </div>
-
   <div class="vs-label">VS</div>
-
   <div class="battle-arena">
     <div class="food-card" id="card-left" onclick="chooseSide('left')">
       <div class="badge" id="badge-left" style="display:none">👑 卫冕</div>
@@ -277,7 +159,7 @@
       <div class="wins-tag" id="wins-left"></div>
     </div>
     <div class="food-card" id="card-right" onclick="chooseSide('right')">
-      <div class="badge" id="badge-right" style="display:none">新挑战者</div>
+      <div class="badge" id="badge-right" style="display:none">挑战者</div>
       <span class="emoji-big" id="emoji-right">🍕</span>
       <div class="name" id="name-right">披萨</div>
       <div class="elo-tag" id="elo-right">ELO 1200</div>
@@ -285,26 +167,62 @@
       <div class="wins-tag" id="wins-right"></div>
     </div>
   </div>
-
   <button class="skip-btn" onclick="skipBattle()">换一对</button>
   <div class="battle-status" id="battle-status">已对战 0 次</div>
 </div>
 
-<!-- RANKING PAGE -->
+<!-- RANKING -->
 <div id="rank-page" class="page">
   <h2>🏆 排行榜</h2>
   <div class="ranking-list" id="ranking-list"></div>
 </div>
 
-<!-- STATS PAGE -->
-<div id="stats-page" class="page">
-  <h2>📊 统计</h2>
-  <div class="stats-grid" id="stats-grid"></div>
-  <div class="section-title">分类分布</div>
-  <div class="bar-chart" id="bar-chart"></div>
+<!-- ANALYSIS -->
+<div id="analysis-page" class="page">
+  <h2>🧬 饮食分析</h2>
+
+  <!-- 健康度 -->
+  <div class="analysis-card">
+    <h3>💚 健康指数</h3>
+    <div class="health-meter-wrap">
+      <div class="health-meter-track" style="flex:1">
+        <div class="health-meter-fill" id="health-fill">--</div>
+      </div>
+      <div>
+        <div class="health-score-num" id="health-score">--</div>
+        <div style="font-size:11px;color:var(--muted)">/ 100</div>
+      </div>
+    </div>
+    <div class="health-grade" id="health-grade"></div>
+    <div class="section-title" style="margin-top:14px">各分类健康分布</div>
+    <div class="health-breakdown" id="health-breakdown"></div>
+  </div>
+
+  <!-- 偏好分析 -->
+  <div class="analysis-card">
+    <h3>💜 口味偏好</h3>
+    <canvas class="radar" id="radar-canvas" width="220" height="220"></canvas>
+    <div class="section-title">分类偏好排名</div>
+    <div class="pref-bars" id="pref-bars"></div>
+  </div>
+
+  <!-- 今日预测 -->
+  <div class="analysis-card">
+    <h3>🔮 今天想吃什么？</h3>
+    <div class="mood-row" id="mood-row">
+      <button class="mood-btn active" onclick="setMood('随便',this)">🎲 随便</button>
+      <button class="mood-btn" onclick="setMood('轻食',this)">🥗 轻食</button>
+      <button class="mood-btn" onclick="setMood('解馋',this)">🔥 解馋</button>
+      <button class="mood-btn" onclick="setMood('甜品',this)">🍰 甜品</button>
+    </div>
+    <div class="predict-grid" id="predict-grid"></div>
+    <div style="text-align:center;margin-top:12px">
+      <button class="mood-btn" onclick="renderAnalysis()" style="border-color:var(--accent2)">🔄 再预测一次</button>
+    </div>
+  </div>
 </div>
 
-<!-- ADD FOOD PAGE -->
+<!-- ADD FOOD -->
 <div id="add-page" class="page">
   <h2>➕ 添加食物</h2>
   <div class="form-group">
@@ -344,316 +262,434 @@
   </div>
 </div>
 
-<!-- NAV -->
 <nav>
-  <button class="nav-btn active" id="nav-battle" onclick="switchPage('battle', this)">
-    <span class="icon">⚔️</span>对战
-  </button>
-  <button class="nav-btn" id="nav-rank" onclick="switchPage('rank', this)">
-    <span class="icon">🏆</span>排行
-  </button>
-  <button class="nav-btn" id="nav-stats" onclick="switchPage('stats', this)">
-    <span class="icon">📊</span>统计
-  </button>
-  <button class="nav-btn" id="nav-add" onclick="switchPage('add', this)">
-    <span class="icon">➕</span>添加
-  </button>
+  <button class="nav-btn active" id="nav-battle"   onclick="switchPage('battle',this)"><span class="icon">⚔️</span>对战</button>
+  <button class="nav-btn"        id="nav-rank"     onclick="switchPage('rank',this)"><span class="icon">🏆</span>排行</button>
+  <button class="nav-btn"        id="nav-analysis" onclick="switchPage('analysis',this)"><span class="icon">🧬</span>分析</button>
+  <button class="nav-btn"        id="nav-add"      onclick="switchPage('add',this)"><span class="icon">➕</span>添加</button>
 </nav>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ===================== DATA =====================
-const DEFAULT_FOODS = [
-  { id:1,  name:'拉面',     emoji:'🍜', cat:'日料', elo:1200, battles:0, wins:0 },
-  { id:2,  name:'寿司',     emoji:'🍣', cat:'日料', elo:1200, battles:0, wins:0 },
-  { id:3,  name:'披萨',     emoji:'🍕', cat:'西餐', elo:1200, battles:0, wins:0 },
-  { id:4,  name:'炸鸡',     emoji:'🍗', cat:'快餐', elo:1200, battles:0, wins:0 },
-  { id:5,  name:'麻婆豆腐', emoji:'🫕', cat:'中餐', elo:1200, battles:0, wins:0 },
-  { id:6,  name:'汉堡',     emoji:'🍔', cat:'快餐', elo:1200, battles:0, wins:0 },
-  { id:7,  name:'麻辣烫',   emoji:'🍲', cat:'中餐', elo:1200, battles:0, wins:0 },
-  { id:8,  name:'章鱼小丸子',emoji:'🐙', cat:'日料', elo:1200, battles:0, wins:0 },
-  { id:9,  name:'提拉米苏', emoji:'🍰', cat:'甜点', elo:1200, battles:0, wins:0 },
-  { id:10, name:'珍珠奶茶', emoji:'🧋', cat:'饮品', elo:1200, battles:0, wins:0 },
-  { id:11, name:'煎饺',     emoji:'🥟', cat:'中餐', elo:1200, battles:0, wins:0 },
-  { id:12, name:'意面',     emoji:'🍝', cat:'西餐', elo:1200, battles:0, wins:0 },
-  { id:13, name:'烤串',     emoji:'🍢', cat:'小吃', elo:1200, battles:0, wins:0 },
-  { id:14, name:'三明治',   emoji:'🥪', cat:'西餐', elo:1200, battles:0, wins:0 },
-  { id:15, name:'冰淇淋',   emoji:'🍦', cat:'甜点', elo:1200, battles:0, wins:0 },
-  { id:16, name:'北京烤鸭', emoji:'🦆', cat:'中餐', elo:1200, battles:0, wins:0 },
-];
+// =================== DATA ===================
+const HEALTH = { // 各食物健康分 0-100
+  '拉面':60,'寿司':78,'披萨':45,'炸鸡':35,'麻婆豆腐':65,'汉堡':38,
+  '麻辣烫':62,'章鱼小丸子':70,'提拉米苏':30,'珍珠奶茶':28,
+  '煎饺':60,'意面':52,'烤串':55,'三明治':65,'冰淇淋':25,'北京烤鸭':55,
+};
+const CAT_HEALTH = { '中餐':65,'日料':75,'西餐':50,'快餐':35,'甜点':28,'小吃':55,'饮品':40 };
 
+// 口味维度
+const FLAVOR_DIM = ['鲜咸','辛辣','甜腻','清淡','油炸','高蛋白'];
+const FOOD_FLAVOR = { // 各食物 6 维度评分 (0-10)
+  '拉面'    :[8,4,2,3,2,7],  '寿司'    :[7,1,2,8,0,8],
+  '披萨'    :[7,2,4,2,2,6],  '炸鸡'    :[6,3,2,2,9,8],
+  '麻婆豆腐':[8,9,2,4,3,5],  '汉堡'    :[7,2,4,2,7,7],
+  '麻辣烫'  :[8,8,1,4,2,5],  '章鱼小丸子':[7,2,3,5,4,5],
+  '提拉米苏':[2,0,9,2,2,3],  '珍珠奶茶':[2,0,8,3,0,1],
+  '煎饺'    :[7,3,2,4,5,6],  '意面'    :[7,2,3,3,2,6],
+  '烤串'    :[8,5,2,2,4,8],  '三明治'  :[6,2,3,6,2,7],
+  '冰淇淋'  :[1,0,10,4,0,2], '北京烤鸭':[7,3,2,3,5,8],
+};
+
+const DEFAULT_FOODS = [
+  {id:1,  name:'拉面',     emoji:'🍜',cat:'日料', elo:1200,battles:0,wins:0},
+  {id:2,  name:'寿司',     emoji:'🍣',cat:'日料', elo:1200,battles:0,wins:0},
+  {id:3,  name:'披萨',     emoji:'🍕',cat:'西餐', elo:1200,battles:0,wins:0},
+  {id:4,  name:'炸鸡',     emoji:'🍗',cat:'快餐', elo:1200,battles:0,wins:0},
+  {id:5,  name:'麻婆豆腐', emoji:'🫕',cat:'中餐', elo:1200,battles:0,wins:0},
+  {id:6,  name:'汉堡',     emoji:'🍔',cat:'快餐', elo:1200,battles:0,wins:0},
+  {id:7,  name:'麻辣烫',   emoji:'🍲',cat:'中餐', elo:1200,battles:0,wins:0},
+  {id:8,  name:'章鱼小丸子',emoji:'🐙',cat:'日料', elo:1200,battles:0,wins:0},
+  {id:9,  name:'提拉米苏', emoji:'🍰',cat:'甜点', elo:1200,battles:0,wins:0},
+  {id:10, name:'珍珠奶茶', emoji:'🧋',cat:'饮品', elo:1200,battles:0,wins:0},
+  {id:11, name:'煎饺',     emoji:'🥟',cat:'中餐', elo:1200,battles:0,wins:0},
+  {id:12, name:'意面',     emoji:'🍝',cat:'西餐', elo:1200,battles:0,wins:0},
+  {id:13, name:'烤串',     emoji:'🍢',cat:'小吃', elo:1200,battles:0,wins:0},
+  {id:14, name:'三明治',   emoji:'🥪',cat:'西餐', elo:1200,battles:0,wins:0},
+  {id:15, name:'冰淇淋',   emoji:'🍦',cat:'甜点', elo:1200,battles:0,wins:0},
+  {id:16, name:'北京烤鸭', emoji:'🦆',cat:'中餐', elo:1200,battles:0,wins:0},
+];
 const EMOJIS = ['🍜','🍣','🍕','🍗','🫕','🍔','🍲','🐙','🍰','🧋','🥟','🍝','🍢','🥪','🍦','🦆','🍱','🥘','🍛','🥗','🌮','🌯','🍞','🧆','🥩','🍤','🦞','🦐','🥓','🍳','🥞','🧇'];
 
-let foods = JSON.parse(localStorage.getItem('fb_foods') || 'null') || JSON.parse(JSON.stringify(DEFAULT_FOODS));
-let totalBattles = parseInt(localStorage.getItem('fb_battles') || '0');
+let foods = JSON.parse(localStorage.getItem('fb_foods')||'null') || JSON.parse(JSON.stringify(DEFAULT_FOODS));
+let totalBattles = parseInt(localStorage.getItem('fb_battles')||'0');
 let selectedEmoji = '🍜';
 let busy = false;
-
-// Battle state
-let champIdx = null;   // index of current reigning champ (null = no champ yet)
-let challIdx = null;   // index of current challenger
-let champStreak = 0;   // consecutive wins of current champ
+let champIdx = null, challIdx = null, champStreak = 0;
+let currentMood = '随便';
 
 function save() {
   localStorage.setItem('fb_foods', JSON.stringify(foods));
   localStorage.setItem('fb_battles', totalBattles);
 }
 
-// ===================== ELO =====================
-function updateElo(winIdx, loseIdx) {
-  const K = 32;
-  const ea = 1 / (1 + Math.pow(10, (foods[loseIdx].elo - foods[winIdx].elo) / 400));
-  foods[winIdx].elo = Math.round(foods[winIdx].elo + K * (1 - ea));
-  foods[loseIdx].elo = Math.round(foods[loseIdx].elo + K * (0 - (1 - ea)));
-  foods[winIdx].battles++; foods[winIdx].wins++;
-  foods[loseIdx].battles++;
+// =================== ELO ===================
+function updateElo(wi, li) {
+  const K=32, ea = 1/(1+Math.pow(10,(foods[li].elo-foods[wi].elo)/400));
+  foods[wi].elo = Math.round(foods[wi].elo + K*(1-ea));
+  foods[li].elo = Math.round(foods[li].elo + K*(0-(1-ea)));
+  foods[wi].battles++; foods[wi].wins++; foods[li].battles++;
 }
 
-// ===================== ANIMATIONS (Web Animations API) =====================
+// =================== ANIMATIONS ===================
 function animFly(card, toRight) {
   return card.animate([
-    { transform: 'translateX(0) rotate(0deg)', opacity: 1 },
-    { transform: `translateX(${toRight ? 380 : -380}px) rotate(${toRight ? 28 : -28}deg)`, opacity: 0 }
-  ], { duration: 480, easing: 'ease', fill: 'none' });
+    {transform:'translateX(0) rotate(0deg)',opacity:1},
+    {transform:`translateX(${toRight?400:-400}px) rotate(${toRight?28:-28}deg)`,opacity:0}
+  ],{duration:480,easing:'ease',fill:'none'});
 }
 function animPulse(card) {
-  return card.animate([
-    { transform: 'scale(1)', boxShadow: 'none' },
-    { transform: 'scale(1.07)', boxShadow: '0 0 24px rgba(107,203,119,0.5)' },
-    { transform: 'scale(1)' }
-  ], { duration: 340, easing: 'ease' });
+  card.animate([
+    {transform:'scale(1)'},
+    {transform:'scale(1.07)',boxShadow:'0 0 24px rgba(107,203,119,0.6)'},
+    {transform:'scale(1)'}
+  ],{duration:340,easing:'ease'});
 }
 function animEnter(card) {
   card.animate([
-    { transform: 'translateX(60px)', opacity: 0 },
-    { transform: 'translateX(0)',    opacity: 1 }
-  ], { duration: 320, easing: 'ease' });
+    {transform:'translateX(60px)',opacity:0},
+    {transform:'translateX(0)',opacity:1}
+  ],{duration:320,easing:'ease'});
 }
 
-// ===================== BATTLE =====================
+// =================== BATTLE ===================
 function getRandomIdx(excludes) {
-  if (foods.length < 2) return 0;
-  let idx, tries = 0;
-  do { idx = Math.floor(Math.random() * foods.length); tries++; }
-  while (excludes.includes(idx) && tries < 50);
+  if (foods.length<2) return 0;
+  let idx, t=0;
+  do { idx=Math.floor(Math.random()*foods.length); t++; }
+  while (excludes.includes(idx) && t<50);
   return idx;
 }
-
 function renderCard(side, idx, isChamp) {
-  const f = foods[idx];
-  document.getElementById('emoji-' + side).textContent = f.emoji;
-  document.getElementById('name-'  + side).textContent = f.name;
-  document.getElementById('elo-'   + side).textContent = 'ELO ' + f.elo;
-  document.getElementById('cat-'   + side).textContent = f.cat;
-  const winsEl = document.getElementById('wins-' + side);
-  winsEl.textContent = (isChamp && champStreak > 0) ? '🔥 连胜 ' + champStreak + ' 场' : '';
-  const badge = document.getElementById('badge-' + side);
-  if (isChamp && champStreak > 0) { badge.textContent = '👑 卫冕'; badge.style.display = 'block'; }
-  else if (!isChamp)               { badge.textContent = '挑战者';  badge.style.display = 'block'; }
-  else                             { badge.style.display = 'none'; }
-  const card = document.getElementById('card-' + side);
-  card.classList.toggle('champion-card', isChamp && champStreak > 0);
+  const f=foods[idx];
+  document.getElementById('emoji-'+side).textContent = f.emoji;
+  document.getElementById('name-' +side).textContent = f.name;
+  document.getElementById('elo-'  +side).textContent = 'ELO '+f.elo;
+  document.getElementById('cat-'  +side).textContent = f.cat;
+  document.getElementById('wins-' +side).textContent = (isChamp&&champStreak>0)?'🔥 连胜 '+champStreak+' 场':'';
+  const badge = document.getElementById('badge-'+side);
+  if (isChamp&&champStreak>0)  { badge.textContent='👑 卫冕';  badge.style.display='block'; }
+  else if (!isChamp)           { badge.textContent='挑战者';   badge.style.display='block'; }
+  else                         { badge.style.display='none'; }
+  const card = document.getElementById('card-'+side);
+  card.classList.toggle('champion-card', isChamp&&champStreak>0);
 }
-
 function updateStreakBar() {
-  for (let i = 0; i < 5; i++)
-    document.getElementById('dot' + i).classList.toggle('filled', i < champStreak);
-  document.getElementById('streak-label').textContent  = champStreak + ' / 5';
-  document.getElementById('battle-status').textContent = '已对战 ' + totalBattles + ' 次';
+  for (let i=0;i<5;i++) document.getElementById('dot'+i).classList.toggle('filled',i<champStreak);
+  document.getElementById('streak-label').textContent  = champStreak+' / 5';
+  document.getElementById('battle-status').textContent = '已对战 '+totalBattles+' 次';
 }
-
 function startFreshBattle() {
-  champStreak = 0;
-  champIdx = getRandomIdx([]);
-  challIdx = getRandomIdx([champIdx]);
-  renderCard('left', champIdx, true);
-  renderCard('right', challIdx, false);
-  updateStreakBar();
+  champStreak=0; champIdx=getRandomIdx([]); challIdx=getRandomIdx([champIdx]);
+  renderCard('left',champIdx,true); renderCard('right',challIdx,false); updateStreakBar();
 }
-
 function chooseSide(side) {
-  if (busy) return;
-  busy = true;
-
-  const leftWins = (side === 'left');
-  const winIdx   = leftWins ? champIdx : challIdx;
-  const loseIdx  = leftWins ? challIdx : champIdx;
-  const winSide  = leftWins ? 'left' : 'right';
-  const loseSide = leftWins ? 'right' : 'left';
-
-  updateElo(winIdx, loseIdx);
-  totalBattles++;
-  save();
-
-  const winCard  = document.getElementById('card-' + winSide);
-  const loseCard = document.getElementById('card-' + loseSide);
-
-  // 胜者脉冲，败者飞出（Web Animations API，每次调用都是全新动画实例）
-  animPulse(winCard);
-  const flyAnim = animFly(loseCard, loseSide === 'right');
-
-  flyAnim.onfinish = () => {
-    if (leftWins) {
-      champStreak++;
-      updateStreakBar();
-      if (champStreak >= 5) { showChampion(); return; }
-      // 胜者留在左边，换新挑战者到右边
-      challIdx = getRandomIdx([champIdx]);
-      renderCard('left',  champIdx, true);
-      renderCard('right', challIdx, false);
-      animEnter(loseCard);  // 新挑战者从右边滑入
+  if (busy) return; busy=true;
+  const lw=(side==='left');
+  const wi=lw?champIdx:challIdx, li=lw?challIdx:champIdx;
+  const ws=lw?'left':'right', ls=lw?'right':'left';
+  updateElo(wi,li); totalBattles++; save();
+  const wc=document.getElementById('card-'+ws);
+  const lc=document.getElementById('card-'+ls);
+  animPulse(wc);
+  const fly=animFly(lc, ls==='right');
+  fly.onfinish = () => {
+    if (lw) {
+      champStreak++; updateStreakBar();
+      if (champStreak>=5) { showChampion(); return; }
+      challIdx=getRandomIdx([champIdx]);
+      renderCard('left',champIdx,true); renderCard('right',challIdx,false);
+      animEnter(lc);
     } else {
-      // 挑战者胜 → 移到左边成为新卫冕，换新挑战者
-      champIdx = challIdx;
-      champStreak = 1;
-      updateStreakBar();
-      challIdx = getRandomIdx([champIdx]);
-      renderCard('left',  champIdx, true);
-      renderCard('right', challIdx, false);
+      champIdx=challIdx; champStreak=1; updateStreakBar();
+      challIdx=getRandomIdx([champIdx]);
+      renderCard('left',champIdx,true); renderCard('right',challIdx,false);
       animEnter(document.getElementById('card-left'));
       animEnter(document.getElementById('card-right'));
     }
-    busy = false;
+    busy=false;
   };
 }
-
-function skipBattle() {
-  if (busy) return;
-  startFreshBattle();
-}
-
+function skipBattle() { if(!busy) startFreshBattle(); }
 function showChampion() {
-  const f = foods[champIdx];
-  document.getElementById('champ-emoji').textContent = f.emoji;
-  document.getElementById('champ-name').textContent = f.name + ' 🎉';
-  document.getElementById('champ-sub').textContent = '连赢 5 场！当之无愧的今日冠军！';
+  const f=foods[champIdx];
+  document.getElementById('champ-emoji').textContent=f.emoji;
+  document.getElementById('champ-name').textContent=f.name+' 🎉';
+  document.getElementById('champ-sub').textContent='连赢 5 场！当之无愧的今日冠军！';
   document.getElementById('champion-overlay').classList.add('show');
-  busy = false;
+  busy=false;
 }
-
 function continueWithChamp() {
   document.getElementById('champion-overlay').classList.remove('show');
-  champStreak = 0;
-  challIdx = getRandomIdx([champIdx]);
-  renderCard('left', champIdx, true);
-  document.getElementById('wins-left').textContent = '前冠军继续！';
-  renderCard('right', challIdx, false);
+  champStreak=0; challIdx=getRandomIdx([champIdx]);
+  renderCard('left',champIdx,true);
+  document.getElementById('wins-left').textContent='前冠军继续！';
+  renderCard('right',challIdx,false);
   animEnter(document.getElementById('card-right'));
-  updateStreakBar();
-  busy = false;
+  updateStreakBar(); busy=false;
 }
-
 function resetBattle() {
   document.getElementById('champion-overlay').classList.remove('show');
   startFreshBattle();
 }
 
-// ===================== RANKING =====================
+// =================== RANKING ===================
 function renderRanking() {
-  const sorted = [...foods].sort((a, b) => b.elo - a.elo);
-  document.getElementById('ranking-list').innerHTML = sorted.map((f, i) => {
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
-    const winRate = f.battles > 0 ? Math.round(f.wins / f.battles * 100) : 0;
+  const sorted=[...foods].sort((a,b)=>b.elo-a.elo);
+  document.getElementById('ranking-list').innerHTML = sorted.map((f,i)=>{
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+    const wr=f.battles>0?Math.round(f.wins/f.battles*100):0;
     return `<div class="rank-item">
       <div class="rank-num">${medal}</div>
       <div class="rank-emoji">${f.emoji}</div>
       <div class="rank-info">
         <div class="rank-name">${f.name}</div>
-        <div class="rank-meta">${f.cat} · ${f.battles}场 · 胜率${winRate}%</div>
+        <div class="rank-meta">${f.cat} · ${f.battles}场 · 胜率${wr}%</div>
       </div>
       <div class="rank-elo">${f.elo}</div>
     </div>`;
   }).join('');
 }
 
-// ===================== STATS =====================
-function renderStats() {
-  const topFood = [...foods].sort((a, b) => b.elo - a.elo)[0];
-  const mostBattled = [...foods].sort((a, b) => b.battles - a.battles)[0];
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card"><div class="val">${foods.length}</div><div class="label">食物种类</div></div>
-    <div class="stat-card"><div class="val">${totalBattles}</div><div class="label">总对战次数</div></div>
-    <div class="stat-card"><div class="val">${topFood ? topFood.emoji : '—'}</div><div class="label">ELO 冠军<br><small style="color:var(--accent2)">${topFood ? topFood.name : ''}</small></div></div>
-    <div class="stat-card"><div class="val">${mostBattled ? mostBattled.battles : 0}</div><div class="label">最多对战<br><small style="color:var(--accent2)">${mostBattled ? mostBattled.name : ''}</small></div></div>
-  `;
-  const catCount = {};
-  foods.forEach(f => catCount[f.cat] = (catCount[f.cat] || 0) + 1);
-  const maxCat = Math.max(...Object.values(catCount));
-  document.getElementById('bar-chart').innerHTML = Object.entries(catCount)
-    .sort((a, b) => b[1] - a[1])
-    .map(([cat, count]) => `
-      <div class="bar-row">
-        <div class="bar-label">${cat}</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="width:${count / maxCat * 100}%">${count}种</div>
-        </div>
-      </div>`).join('');
+// =================== ANALYSIS ===================
+function getHealthScore(f) {
+  return HEALTH[f.name] !== undefined ? HEALTH[f.name] : (CAT_HEALTH[f.cat]||50);
 }
 
-// ===================== ADD FOOD =====================
+function renderAnalysis() {
+  renderHealthSection();
+  renderPreferenceSection();
+  renderPrediction();
+}
+
+// --- Health ---
+function renderHealthSection() {
+  if (totalBattles < 3) {
+    document.getElementById('health-fill').textContent = '多对战几次再看！';
+    document.getElementById('health-fill').style.width = '50%';
+    document.getElementById('health-fill').style.background = '#555';
+    document.getElementById('health-score').textContent = '--';
+    document.getElementById('health-grade').textContent = '需要至少 3 次对战数据';
+    return;
+  }
+  // 加权健康分：ELO 越高的食物权重越大
+  const sorted=[...foods].sort((a,b)=>b.elo-a.elo);
+  let weightedSum=0, totalW=0;
+  sorted.forEach((f,i)=>{
+    const w = Math.max(1, sorted.length-i); // rank weight
+    weightedSum += getHealthScore(f) * w;
+    totalW += w;
+  });
+  const score = Math.round(weightedSum/totalW);
+  const color = score>=75?'#6bcb77':score>=55?'#ffd93d':score>=35?'#ff9b3f':'#ff6b6b';
+  const grade = score>=80?'🌿 饮食很健康，继续保持！':score>=65?'👍 整体不错，偶尔放纵一下':score>=50?'😐 健康一般，可以多加蔬菜':score>=35?'⚠️ 偏向重口，注意均衡':' 🚨 高热量偏好，记得运动！';
+  const fill = document.getElementById('health-fill');
+  fill.style.width = score+'%';
+  fill.style.background = `linear-gradient(90deg, ${color}aa, ${color})`;
+  fill.textContent = score+'分';
+  document.getElementById('health-score').textContent = score;
+  document.getElementById('health-score').style.color = color;
+  document.getElementById('health-grade').textContent = grade;
+
+  // 分类健康分布
+  const catScores = {};
+  foods.forEach(f => {
+    if (!catScores[f.cat]) catScores[f.cat]={sum:0,cnt:0,eloSum:0};
+    catScores[f.cat].sum += getHealthScore(f);
+    catScores[f.cat].eloSum += f.elo;
+    catScores[f.cat].cnt++;
+  });
+  const catArr = Object.entries(catScores).sort((a,b)=>b[1].eloSum/b[1].cnt - a[1].eloSum/a[1].cnt);
+  document.getElementById('health-breakdown').innerHTML = catArr.map(([cat,d])=>{
+    const h=Math.round(d.sum/d.cnt);
+    const c=h>=70?'#6bcb77':h>=50?'#ffd93d':'#ff6b6b';
+    return `<div class="hb-row">
+      <div class="hb-label">${cat}</div>
+      <div class="hb-track"><div class="hb-fill" style="width:${h}%;background:${c}"></div></div>
+      <div style="font-size:11px;color:${c};width:32px;text-align:right">${h}</div>
+    </div>`;
+  }).join('');
+}
+
+// --- Preference Radar ---
+function renderPreferenceSection() {
+  // Compute weighted flavor profile
+  const dim=[0,0,0,0,0,0];
+  let totalW=0;
+  foods.forEach(f=>{
+    const w = Math.max(0, f.elo-1100); // weight by ELO above baseline
+    const flavor = FOOD_FLAVOR[f.name] || [5,5,5,5,5,5];
+    flavor.forEach((v,i)=>dim[i]+=v*w);
+    totalW+=w;
+  });
+  const norm = totalW>0 ? dim.map(v=>Math.min(10,v/totalW)) : [5,5,5,5,5,5];
+  drawRadar(norm);
+
+  // Category preference
+  const catElo={};
+  foods.forEach(f=>{
+    if(!catElo[f.cat]){catElo[f.cat]={sum:0,cnt:0};}
+    catElo[f.cat].sum+=f.elo; catElo[f.cat].cnt++;
+  });
+  const catArr=Object.entries(catElo).sort((a,b)=>(b[1].sum/b[1].cnt)-(a[1].sum/a[1].cnt));
+  const maxElo=catArr.length>0?(catArr[0][1].sum/catArr[0][1].cnt):1200;
+  document.getElementById('pref-bars').innerHTML = catArr.map(([cat,d])=>{
+    const avg=Math.round(d.sum/d.cnt);
+    const pct=Math.max(5,Math.round((avg-1100)/(maxElo-1099)*100));
+    return `<div class="pref-row">
+      <div class="pref-label">${cat}</div>
+      <div class="pref-track"><div class="pref-fill" style="width:${pct}%">${avg}</div></div>
+      <div class="pref-val">${avg}</div>
+    </div>`;
+  }).join('');
+}
+
+function drawRadar(values) {
+  const canvas=document.getElementById('radar-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=220,H=220,cx=110,cy=110,R=80;
+  ctx.clearRect(0,0,W,H);
+  const N=6;
+  const angles=Array.from({length:N},(_,i)=>i*2*Math.PI/N - Math.PI/2);
+
+  // Grid
+  for(let r=2;r<=5;r++){
+    ctx.beginPath();
+    angles.forEach((a,i)=>{const x=cx+Math.cos(a)*(R*r/5),y=cy+Math.sin(a)*(R*r/5); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.closePath(); ctx.strokeStyle='#333'; ctx.lineWidth=1; ctx.stroke();
+  }
+  // Axes
+  angles.forEach(a=>{
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*R, cy+Math.sin(a)*R);
+    ctx.strokeStyle='#444'; ctx.stroke();
+  });
+  // Data
+  ctx.beginPath();
+  angles.forEach((a,i)=>{
+    const v=values[i]/10;
+    const x=cx+Math.cos(a)*R*v, y=cy+Math.sin(a)*R*v;
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  });
+  ctx.closePath();
+  ctx.fillStyle='rgba(123,97,255,0.25)'; ctx.fill();
+  ctx.strokeStyle='#bb86fc'; ctx.lineWidth=2; ctx.stroke();
+  // Dots
+  angles.forEach((a,i)=>{
+    const v=values[i]/10;
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*R*v, cy+Math.sin(a)*R*v, 4,0,2*Math.PI);
+    ctx.fillStyle='#bb86fc'; ctx.fill();
+  });
+  // Labels
+  ctx.fillStyle='#888'; ctx.font='11px system-ui'; ctx.textAlign='center';
+  const labels=FLAVOR_DIM;
+  angles.forEach((a,i)=>{
+    const x=cx+Math.cos(a)*(R+18), y=cy+Math.sin(a)*(R+18)+4;
+    ctx.fillText(labels[i],x,y);
+  });
+}
+
+// --- Prediction ---
+function setMood(mood, btn) {
+  currentMood=mood;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPrediction();
+}
+
+function renderPrediction() {
+  const hour=new Date().getHours();
+  const timeLabel=hour<10?'早餐':hour<14?'午餐':hour<17?'下午茶':hour<21?'晚餐':'宵夜';
+
+  // Score each food
+  const scored = foods.map(f=>{
+    let score = f.elo;
+    const h=getHealthScore(f);
+
+    // Mood filter
+    if(currentMood==='轻食') score += (h-50)*3;
+    if(currentMood==='解馋') score -= (h-50)*2;
+    if(currentMood==='甜品') score += (f.cat==='甜点'||f.cat==='饮品')?80:-20;
+
+    // Time of day
+    if(timeLabel==='早餐') { score += (h>60)?20:0; score += (f.cat==='饮品')?15:0; }
+    if(timeLabel==='下午茶') { score += (f.cat==='甜点'||f.cat==='饮品')?30:0; }
+    if(timeLabel==='宵夜') { score += (f.cat==='小吃'||f.cat==='快餐')?20:0; }
+
+    // Randomness
+    score += (Math.random()-0.5)*120;
+    return {f, score};
+  });
+
+  scored.sort((a,b)=>b.score-a.score);
+  const top3=scored.slice(0,3);
+  const reasons=['ELO 最高 + 符合心情','你一直很喜欢','时间段推荐'];
+
+  document.getElementById('predict-grid').innerHTML = top3.map((item,i)=>{
+    const h=getHealthScore(item.f);
+    const healthTag=h>=70?'💚 健康':h>=50?'💛 一般':'🍔 放纵';
+    return `<div class="predict-card ${i===0?'top':''}">
+      <div class="meal-time">${i===0?'⭐ 首选':timeLabel} ${i+1}</div>
+      <span class="pred-emoji">${item.f.emoji}</span>
+      <div class="pred-name">${item.f.name}</div>
+      <div class="pred-reason">${healthTag}<br>${reasons[i]}</div>
+    </div>`;
+  }).join('');
+}
+
+// =================== ADD FOOD ===================
 function renderEmojiPicker() {
-  document.getElementById('emoji-picker').innerHTML = EMOJIS.map(e =>
-    `<button class="emoji-btn ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</button>`
+  document.getElementById('emoji-picker').innerHTML = EMOJIS.map(e=>
+    `<button class="emoji-btn ${e===selectedEmoji?'selected':''}" onclick="selectEmoji('${e}')">${e}</button>`
   ).join('');
 }
-
-function selectEmoji(e) {
-  selectedEmoji = e;
-  renderEmojiPicker();
-}
-
+function selectEmoji(e) { selectedEmoji=e; renderEmojiPicker(); }
 function addFood() {
-  const name = document.getElementById('food-name').value.trim();
-  const cat  = document.getElementById('food-cat').value;
-  if (!name) { showToast('请输入食物名称！'); return; }
-  if (foods.find(f => f.name === name)) { showToast('已经有这个食物了！'); return; }
-  foods.push({ id: Date.now(), name, emoji: selectedEmoji, cat, elo: 1200, battles: 0, wins: 0 });
-  save();
-  document.getElementById('food-name').value = '';
-  renderFoodList();
-  showToast(selectedEmoji + ' ' + name + ' 已添加！');
+  const name=document.getElementById('food-name').value.trim();
+  const cat=document.getElementById('food-cat').value;
+  if(!name){showToast('请输入食物名称！');return;}
+  if(foods.find(f=>f.name===name)){showToast('已经有这个食物了！');return;}
+  foods.push({id:Date.now(),name,emoji:selectedEmoji,cat,elo:1200,battles:0,wins:0});
+  save(); document.getElementById('food-name').value=''; renderFoodList();
+  showToast(selectedEmoji+' '+name+' 已添加！');
 }
-
 function removeFood(id) {
-  if (foods.length <= 2) { showToast('至少保留 2 种食物！'); return; }
-  foods = foods.filter(f => f.id !== id);
-  save();
-  renderFoodList();
-  startFreshBattle();
+  if(foods.length<=2){showToast('至少保留 2 种食物！');return;}
+  foods=foods.filter(f=>f.id!==id); save(); renderFoodList(); startFreshBattle();
 }
-
 function renderFoodList() {
-  document.getElementById('food-count').textContent = foods.length;
-  document.getElementById('food-list').innerHTML = foods.map(f =>
+  document.getElementById('food-count').textContent=foods.length;
+  document.getElementById('food-list').innerHTML=foods.map(f=>
     `<div style="background:var(--card);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:14px;">
       <span>${f.emoji}</span><span style="font-weight:600">${f.name}</span>
       <span style="color:var(--muted);font-size:11px">${f.cat}</span>
-      <button onclick="removeFood(${f.id})" style="background:none;border:none;color:#555;cursor:pointer;font-size:18px;margin-left:auto;line-height:1;">×</button>
+      <button onclick="removeFood(${f.id})" style="background:none;border:none;color:#555;cursor:pointer;font-size:18px;margin-left:auto;line-height:1">×</button>
     </div>`
   ).join('');
 }
 
-// ===================== TOAST =====================
+// =================== TOAST ===================
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// ===================== NAV =====================
+// =================== NAV ===================
 function switchPage(name, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(name + '-page').classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (name === 'rank')  renderRanking();
-  if (name === 'stats') renderStats();
-  if (name === 'add')   { renderEmojiPicker(); renderFoodList(); }
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(name+'-page').classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='rank')     renderRanking();
+  if(name==='analysis') renderAnalysis();
+  if(name==='add')      { renderEmojiPicker(); renderFoodList(); }
 }
 
-// ===================== INIT =====================
+// =================== INIT ===================
 startFreshBattle();
 </script>
 </body>
