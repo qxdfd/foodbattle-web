@@ -225,6 +225,30 @@
 <!-- ADD FOOD -->
 <div id="add-page" class="page">
   <h2>➕ 添加食物</h2>
+
+  <!-- 外卖导入 -->
+  <div class="analysis-card" style="margin-bottom:16px">
+    <h3>📦 从外卖记录导入</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">
+      美团 / 饿了么 / 淘宝闪购 → 进入订单详情页 → 全选文字复制 → 粘贴到下方<br>
+      <span style="color:#666">（无需安装插件，直接复制网页文字即可）</span>
+    </p>
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:12px;background:#1e2a1e;color:#6bcb77;padding:4px 10px;border-radius:10px">美团外卖</span>
+      <span style="font-size:12px;background:#1e2a1e;color:#6bcb77;padding:4px 10px;border-radius:10px">饿了么</span>
+      <span style="font-size:12px;background:#1e2a1e;color:#6bcb77;padding:4px 10px;border-radius:10px">淘宝闪购</span>
+    </div>
+    <textarea id="import-text" placeholder="在这里粘贴订单文字...&#10;&#10;例如：&#10;宫保鸡丁盖浇饭 ×1 ¥18.0&#10;可乐（中杯）×2 ¥7.0&#10;红烧肉盖饭 ×1 ¥22.0"
+      style="width:100%;height:110px;background:#111;border:1px solid #333;border-radius:10px;padding:10px;color:var(--text);font-size:13px;resize:vertical;outline:none;line-height:1.6"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="add-btn" style="flex:1" onclick="parseImport()">🔍 解析并导入</button>
+      <button class="btn-ghost" style="padding:12px 14px;border-radius:var(--radius)" onclick="document.getElementById('import-text').value=''">清空</button>
+    </div>
+    <div id="import-result" style="margin-top:10px;font-size:13px"></div>
+  </div>
+
+  <!-- 手动添加 -->
+  <div class="section-title">手动添加</div>
   <div class="form-group">
     <label>食物名称</label>
     <input type="text" id="food-name" placeholder="比如：牛肉面、炸鸡..." maxlength="20">
@@ -600,44 +624,155 @@ function setMood(mood, btn) {
   renderPrediction();
 }
 
+// 加权随机抽样（softmax temperature sampling）
+function weightedSample(items, k, temp=180) {
+  const pool = items.map(item => ({...item}));
+  const result = [];
+  for (let i=0; i<k && pool.length>0; i++) {
+    const minS = Math.min(...pool.map(x=>x.score));
+    const ws   = pool.map(x=>Math.exp((x.score-minS)/temp));
+    const total = ws.reduce((s,w)=>s+w,0);
+    let r = Math.random()*total, cum=0;
+    for (let j=0; j<pool.length; j++) {
+      cum+=ws[j];
+      if (r<=cum) { result.push(pool[j]); pool.splice(j,1); break; }
+    }
+  }
+  return result;
+}
+
 function renderPrediction() {
   const hour=new Date().getHours();
   const timeLabel=hour<10?'早餐':hour<14?'午餐':hour<17?'下午茶':hour<21?'晚餐':'宵夜';
 
-  // Score each food
   const scored = foods.map(f=>{
-    let score = f.elo;
+    let score = f.elo - 1200; // center around 0
     const h=getHealthScore(f);
-
-    // Mood filter
-    if(currentMood==='轻食') score += (h-50)*3;
-    if(currentMood==='解馋') score -= (h-50)*2;
-    if(currentMood==='甜品') score += (f.cat==='甜点'||f.cat==='饮品')?80:-20;
-
-    // Time of day
-    if(timeLabel==='早餐') { score += (h>60)?20:0; score += (f.cat==='饮品')?15:0; }
-    if(timeLabel==='下午茶') { score += (f.cat==='甜点'||f.cat==='饮品')?30:0; }
-    if(timeLabel==='宵夜') { score += (f.cat==='小吃'||f.cat==='快餐')?20:0; }
-
-    // Randomness
-    score += (Math.random()-0.5)*120;
+    if(currentMood==='轻食')  score += (h-50)*2.5;
+    if(currentMood==='解馋')  score -= (h-50)*1.5;
+    if(currentMood==='甜品')  score += (f.cat==='甜点'||f.cat==='饮品')?100:-30;
+    if(timeLabel==='早餐')    score += (h>60)?15:0;
+    if(timeLabel==='下午茶')  score += (f.cat==='甜点'||f.cat==='饮品')?40:0;
+    if(timeLabel==='宵夜')    score += (f.cat==='小吃'||f.cat==='快餐')?30:0;
     return {f, score};
   });
 
-  scored.sort((a,b)=>b.score-a.score);
-  const top3=scored.slice(0,3);
-  const reasons=['ELO 最高 + 符合心情','你一直很喜欢','时间段推荐'];
+  // 温度采样：temp=200 时 ELO 差100分≈约1.6x概率差，而不是必定选最高的
+  const picked = weightedSample(scored, 3, 200);
+  const labels = ['⭐ 首选','🎲 次选','💡 另一个'];
 
-  document.getElementById('predict-grid').innerHTML = top3.map((item,i)=>{
+  document.getElementById('predict-grid').innerHTML = picked.map((item,i)=>{
     const h=getHealthScore(item.f);
     const healthTag=h>=70?'💚 健康':h>=50?'💛 一般':'🍔 放纵';
     return `<div class="predict-card ${i===0?'top':''}">
-      <div class="meal-time">${i===0?'⭐ 首选':timeLabel} ${i+1}</div>
+      <div class="meal-time">${labels[i]}</div>
       <span class="pred-emoji">${item.f.emoji}</span>
       <div class="pred-name">${item.f.name}</div>
-      <div class="pred-reason">${healthTag}<br>${reasons[i]}</div>
+      <div class="pred-reason">${healthTag} · ${timeLabel}</div>
     </div>`;
   }).join('');
+}
+
+// =================== IMPORT ===================
+// 饮品关键词
+const DRINK_KW=['奶茶','可乐','果汁','咖啡','茶','豆浆','汤','饮','水','粥','汁','牛奶','酸奶'];
+const DESSERT_KW=['蛋糕','冰淇淋','布丁','甜品','糕','点心','奶冻','抹茶','提拉','慕斯','雪糕','冰激凌'];
+const FAST_KW=['汉堡','薯条','炸鸡','鸡块','热狗','披萨','三明治','潜艇堡'];
+const JP_KW=['寿司','拉面','乌冬','丼','刺身','天妇罗','章鱼','大阪','日式'];
+const SNACK_KW=['串','烤','炸','锅贴','煎饼','饺','包子','馒头','肠','关东煮'];
+
+function guessCategory(name) {
+  const n=name;
+  if (DRINK_KW.some(k=>n.includes(k)))   return '饮品';
+  if (DESSERT_KW.some(k=>n.includes(k))) return '甜点';
+  if (FAST_KW.some(k=>n.includes(k)))    return '快餐';
+  if (JP_KW.some(k=>n.includes(k)))      return '日料';
+  if (SNACK_KW.some(k=>n.includes(k)))   return '小吃';
+  return '中餐';
+}
+function guessEmoji(name) {
+  const n=name;
+  if(n.includes('面')||n.includes('拉面')) return '🍜';
+  if(n.includes('饭')||n.includes('盖饭')) return '🍚';
+  if(n.includes('鸡')||n.includes('鸭'))   return '🍗';
+  if(n.includes('牛'))                     return '🥩';
+  if(n.includes('鱼'))                     return '🐟';
+  if(n.includes('虾')||n.includes('蟹'))   return '🦐';
+  if(n.includes('汉堡'))                   return '🍔';
+  if(n.includes('披萨'))                   return '🍕';
+  if(n.includes('饺'))                     return '🥟';
+  if(n.includes('串')||n.includes('烤'))   return '🍢';
+  if(n.includes('奶茶')||n.includes('茶')) return '🧋';
+  if(n.includes('咖啡'))                   return '☕';
+  if(n.includes('可乐'))                   return '🥤';
+  if(n.includes('冰淇淋')||n.includes('雪糕')) return '🍦';
+  if(n.includes('蛋糕'))                   return '🎂';
+  if(n.includes('寿司'))                   return '🍣';
+  if(n.includes('包子')||n.includes('馒头'))return '🥐';
+  if(n.includes('汤'))                     return '🍲';
+  if(n.includes('沙拉'))                   return '🥗';
+  if(n.includes('粥'))                     return '🥣';
+  return '🍱';
+}
+
+function parseImport() {
+  const raw = document.getElementById('import-text').value;
+  if (!raw.trim()) { showToast('请先粘贴订单文字'); return; }
+
+  const lines = raw.split(/[\n\r]+/).map(l=>l.trim()).filter(Boolean);
+  const extracted = [];
+
+  lines.forEach(line=>{
+    // 去掉价格、数量、规格等噪声
+    let name = line
+      .replace(/[¥￥]\s*[\d.]+/g,'')      // 去价格
+      .replace(/[×x×]\s*\d+/g,'')         // 去数量
+      .replace(/\d+(\.\d+)?\s*(元|元|份|个|碗|杯|盒|袋|g|ml|L|kcal)/g,'') // 去单位
+      .replace(/（[^）]*）/g,'')           // 去括号规格
+      .replace(/\([^)]*\)/g,'')
+      .replace(/【[^】]*】/g,'')
+      .replace(/[^\u4e00-\u9fa5a-zA-Z\s]/g,' ') // 只保留中英文
+      .replace(/\s+/g,' ')
+      .trim();
+
+    // 过滤太短或太长或像菜单标题的
+    if (name.length < 2 || name.length > 18) return;
+    if (/^(商品|名称|合计|备注|数量|单价|总价|小计|规格|口味|配料|已下单|订单|店铺|配送|满减|优惠|收货|地址|联系|时间|支付|实付|骑手|预计)/.test(name)) return;
+
+    // 去重
+    if (!extracted.includes(name)) extracted.push(name);
+  });
+
+  if (extracted.length === 0) {
+    document.getElementById('import-result').innerHTML = '<span style="color:var(--accent)">未能识别出食物名称，试试只复制商品列表部分</span>';
+    return;
+  }
+
+  // 添加到食物库（跳过重复）
+  let added=0, skipped=0;
+  extracted.forEach(name=>{
+    if (foods.find(f=>f.name===name)) { skipped++; return; }
+    foods.push({
+      id: Date.now()+Math.random(),
+      name,
+      emoji: guessEmoji(name),
+      cat:   guessCategory(name),
+      elo:   1200, battles:0, wins:0
+    });
+    added++;
+  });
+  save();
+  renderFoodList();
+
+  const resultHtml = `
+    <div style="color:var(--green)">✅ 识别到 ${extracted.length} 种食物，新增 ${added} 种，跳过 ${skipped} 种重复</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+      ${extracted.slice(0,20).map(n=>`<span style="background:#1e2a1e;color:#aaa;padding:3px 10px;border-radius:10px;font-size:12px">${guessEmoji(n)} ${n}</span>`).join('')}
+      ${extracted.length>20?`<span style="color:var(--muted);font-size:12px">...共${extracted.length}种</span>`:''}
+    </div>`;
+  document.getElementById('import-result').innerHTML = resultHtml;
+  document.getElementById('import-text').value='';
+  showToast(`导入 ${added} 种新食物！`);
 }
 
 // =================== ADD FOOD ===================
