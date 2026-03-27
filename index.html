@@ -38,7 +38,7 @@
     bottom: 0;
     z-index: 100;
   }
-  nav button {
+  .nav-btn {
     flex: 1;
     background: none;
     border: none;
@@ -52,288 +52,271 @@
     gap: 4px;
     transition: color 0.2s;
   }
-  nav button.active { color: var(--accent); }
-  nav button span { font-size: 22px; }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn .icon { font-size: 22px; }
 
   /* PAGES */
   .page { display: none; width: 100%; max-width: 480px; padding: 16px 16px 80px; min-height: 100vh; }
   .page.active { display: block; }
 
-  h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
-
   /* BATTLE PAGE */
-  #battle-page { display: flex; flex-direction: column; align-items: center; }
-  #battle-page.active { display: flex; }
+  #battle-page { padding: 0 0 80px; }
+  #battle-page.active { display: flex; flex-direction: column; align-items: center; }
 
-  .battle-header { text-align: center; padding-top: 20px; margin-bottom: 8px; }
-  .battle-header h2 { font-size: 22px; }
-  .battle-header p { color: var(--muted); font-size: 13px; }
+  .battle-header { text-align: center; padding: 20px 16px 0; }
+  .battle-header h2 { font-size: 22px; font-weight: 800; }
+  .battle-header p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* Win streak bar */
+  .streak-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 24px;
+    align-items: center;
+    justify-content: center;
+  }
+  .streak-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #333;
+    transition: background 0.3s, transform 0.3s;
+  }
+  .streak-dot.filled { background: var(--accent2); transform: scale(1.2); }
+  .streak-label { font-size: 12px; color: var(--muted); margin-left: 4px; }
 
   .vs-label {
-    font-size: 28px;
-    font-weight: 900;
+    font-size: 26px; font-weight: 900;
     color: var(--accent2);
-    margin: 4px 0;
     letter-spacing: 2px;
   }
 
   .battle-arena {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     width: 100%;
+    padding: 0 16px;
     justify-content: center;
     align-items: stretch;
-    margin: 8px 0 20px;
-    perspective: 800px;
+    margin: 6px 0 16px;
   }
 
   .food-card {
     flex: 1;
-    max-width: 180px;
+    max-width: 185px;
     background: var(--card);
     border-radius: var(--radius);
-    padding: 20px 12px;
+    padding: 18px 10px;
     text-align: center;
     cursor: pointer;
     border: 2px solid transparent;
-    transition: border-color 0.2s, transform 0.1s;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
     user-select: none;
     position: relative;
-    overflow: hidden;
   }
-  .food-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .food-card:active { transform: scale(0.97); }
+  .food-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .food-card:active { transform: scale(0.96); }
+  .food-card.champion-card { border-color: var(--accent2); }
 
-  .food-card .emoji { font-size: 52px; display: block; margin-bottom: 10px; }
+  .food-card .badge {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    background: var(--accent2); color: #000;
+    font-size: 10px; font-weight: 800;
+    padding: 2px 8px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .food-card .emoji-big { font-size: 54px; display: block; margin: 12px 0 10px; }
   .food-card .name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-  .food-card .elo { font-size: 13px; color: var(--accent2); font-weight: 600; }
-  .food-card .category { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .food-card .elo-tag { font-size: 13px; color: var(--accent2); font-weight: 600; }
+  .food-card .cat-tag { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .food-card .wins-tag { font-size: 12px; color: var(--green); margin-top: 6px; font-weight: 600; }
 
-  .food-card.winner-anim {
-    animation: winner-pulse 0.4s ease;
-  }
-  .food-card.loser-anim {
-    animation: fly-out 0.5s ease forwards;
-  }
+  /* Animations */
+  .food-card.anim-winner { animation: winner-pulse 0.35s ease; }
+  .food-card.anim-fly-right { animation: fly-right 0.5s ease forwards; }
+  .food-card.anim-fly-left { animation: fly-left 0.5s ease forwards; }
+  .food-card.anim-enter { animation: card-enter 0.35s ease; }
 
   @keyframes winner-pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.06); box-shadow: 0 0 20px rgba(107,203,119,0.4); border-color: var(--green); }
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.07); box-shadow: 0 0 24px rgba(107,203,119,0.5); border-color: var(--green); }
     100% { transform: scale(1); }
   }
-  @keyframes fly-out {
-    0% { transform: translateX(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateX(300px) rotate(30deg); opacity: 0; }
+  @keyframes fly-right {
+    to { transform: translateX(350px) rotate(28deg); opacity: 0; }
   }
-  .food-card.loser-left {
-    animation: fly-out-left 0.5s ease forwards;
+  @keyframes fly-left {
+    to { transform: translateX(-350px) rotate(-28deg); opacity: 0; }
   }
-  @keyframes fly-out-left {
-    0% { transform: translateX(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateX(-300px) rotate(-30deg); opacity: 0; }
+  @keyframes card-enter {
+    from { transform: translateX(80px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
   }
 
-  .skip-btn {
-    background: none;
-    border: 1px solid #444;
-    color: var(--muted);
-    padding: 8px 24px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 13px;
-    margin-bottom: 16px;
+  /* Champion overlay */
+  .champion-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px;
+  }
+  .champion-overlay.show { display: flex; }
+  .champion-crown { font-size: 72px; animation: bounce 0.6s ease infinite alternate; }
+  @keyframes bounce { to { transform: translateY(-10px); } }
+  .champion-name { font-size: 32px; font-weight: 900; margin: 12px 0 4px; }
+  .champion-sub { color: var(--muted); font-size: 15px; margin-bottom: 24px; }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 24px; padding: 12px 28px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { background: #ff5252; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-ghost {
+    background: none; color: var(--text); border: 1px solid #555;
+    border-radius: 24px; padding: 12px 28px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
     transition: border-color 0.2s;
   }
-  .skip-btn:hover { border-color: #666; color: var(--text); }
+  .btn-ghost:hover { border-color: #888; }
 
-  .battle-count {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
+  .skip-btn {
+    background: none; border: 1px solid #333; color: var(--muted);
+    padding: 8px 22px; border-radius: 20px; cursor: pointer;
+    font-size: 13px; transition: border-color 0.2s, color 0.2s;
   }
+  .skip-btn:hover { border-color: #555; color: var(--text); }
+  .battle-status { font-size: 12px; color: var(--muted); margin-top: 10px; }
 
-  /* RANKING PAGE */
+  /* RANKING */
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
   .ranking-list { display: flex; flex-direction: column; gap: 10px; }
   .rank-item {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    background: var(--card); border-radius: var(--radius);
+    padding: 12px 16px; display: flex; align-items: center; gap: 14px;
   }
-  .rank-num {
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--muted);
-    width: 28px;
-    text-align: center;
-  }
-  .rank-num.gold { color: #ffd700; }
-  .rank-num.silver { color: #c0c0c0; }
-  .rank-num.bronze { color: #cd7f32; }
+  .rank-num { font-size: 18px; font-weight: 900; color: var(--muted); width: 28px; text-align: center; }
   .rank-emoji { font-size: 32px; }
   .rank-info { flex: 1; }
   .rank-name { font-size: 15px; font-weight: 600; }
   .rank-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .rank-elo {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent2);
-  }
+  .rank-elo { font-size: 16px; font-weight: 700; color: var(--accent2); }
 
-  /* STATS PAGE */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .stat-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 16px;
-    text-align: center;
-  }
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--card); border-radius: var(--radius); padding: 16px; text-align: center; }
   .stat-card .val { font-size: 28px; font-weight: 800; color: var(--accent); }
   .stat-card .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
   .section-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 16px 0 10px;
+    font-size: 13px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 10px;
   }
-
   .bar-chart { display: flex; flex-direction: column; gap: 8px; }
   .bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  .bar-label { width: 80px; text-align: right; color: var(--muted); font-size: 12px; }
-  .bar-track {
-    flex: 1;
-    background: #333;
-    border-radius: 6px;
-    height: 18px;
-    overflow: hidden;
-  }
+  .bar-label { width: 72px; text-align: right; color: var(--muted); font-size: 12px; }
+  .bar-track { flex: 1; background: #333; border-radius: 6px; height: 18px; overflow: hidden; }
   .bar-fill {
-    height: 100%;
-    border-radius: 6px;
+    height: 100%; border-radius: 6px;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
     transition: width 0.6s ease;
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #000;
-    white-space: nowrap;
+    display: flex; align-items: center; padding-left: 8px;
+    font-size: 11px; font-weight: 700; color: #000; white-space: nowrap;
   }
 
-  /* ADD FOOD PAGE */
+  /* ADD FOOD */
   .form-group { margin-bottom: 14px; }
   .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .form-group input, .form-group select {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid #333;
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s;
+    width: 100%; background: var(--card); border: 1px solid #333;
+    border-radius: 10px; padding: 10px 14px; color: var(--text);
+    font-size: 15px; outline: none; transition: border-color 0.2s;
   }
   .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
   .form-group select option { background: var(--card); }
-
-  .emoji-picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 6px;
-  }
+  .emoji-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
   .emoji-btn {
-    font-size: 24px;
-    padding: 6px;
-    background: var(--card);
-    border: 2px solid transparent;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: border-color 0.2s;
+    font-size: 24px; padding: 6px; background: var(--card);
+    border: 2px solid transparent; border-radius: 10px; cursor: pointer; transition: border-color 0.2s;
   }
   .emoji-btn.selected { border-color: var(--accent); background: #2a1a1f; }
-
   .add-btn {
-    width: 100%;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    width: 100%; background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius); padding: 14px; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: background 0.2s, transform 0.1s;
   }
   .add-btn:hover { background: #ff5252; }
   .add-btn:active { transform: scale(0.98); }
 
+  /* TOAST */
   .toast {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
+    position: fixed; bottom: 90px; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: var(--green);
-    color: #000;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    z-index: 200;
+    background: var(--green); color: #000; padding: 10px 20px;
+    border-radius: 20px; font-weight: 700; font-size: 14px;
+    opacity: 0; transition: opacity 0.3s, transform 0.3s; z-index: 300;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 </style>
 </head>
 <body>
 
+<!-- BATTLE PAGE -->
 <div id="battle-page" class="page active">
   <div class="battle-header">
     <h2>🍱 FoodBattle</h2>
-    <p>点击你更想吃的那个！</p>
+    <p>点击你更想吃的！胜者留场，连赢 5 次出冠军</p>
   </div>
+
+  <div class="streak-bar" id="streak-bar">
+    <div class="streak-dot" id="dot0"></div>
+    <div class="streak-dot" id="dot1"></div>
+    <div class="streak-dot" id="dot2"></div>
+    <div class="streak-dot" id="dot3"></div>
+    <div class="streak-dot" id="dot4"></div>
+    <span class="streak-label" id="streak-label">0 / 5</span>
+  </div>
+
   <div class="vs-label">VS</div>
+
   <div class="battle-arena">
     <div class="food-card" id="card-left" onclick="chooseSide('left')">
-      <span class="emoji" id="emoji-left">🍜</span>
+      <div class="badge" id="badge-left" style="display:none">👑 卫冕</div>
+      <span class="emoji-big" id="emoji-left">🍜</span>
       <div class="name" id="name-left">拉面</div>
-      <div class="elo" id="elo-left">ELO 1200</div>
-      <div class="category" id="cat-left">日料</div>
+      <div class="elo-tag" id="elo-left">ELO 1200</div>
+      <div class="cat-tag" id="cat-left">日料</div>
+      <div class="wins-tag" id="wins-left"></div>
     </div>
     <div class="food-card" id="card-right" onclick="chooseSide('right')">
-      <span class="emoji" id="emoji-right">🍕</span>
+      <div class="badge" id="badge-right" style="display:none">新挑战者</div>
+      <span class="emoji-big" id="emoji-right">🍕</span>
       <div class="name" id="name-right">披萨</div>
-      <div class="elo" id="elo-right">ELO 1200</div>
-      <div class="category" id="cat-right">西餐</div>
+      <div class="elo-tag" id="elo-right">ELO 1200</div>
+      <div class="cat-tag" id="cat-right">西餐</div>
+      <div class="wins-tag" id="wins-right"></div>
     </div>
   </div>
-  <button class="skip-btn" onclick="nextBattle()">跳过这对 →</button>
-  <div class="battle-count" id="battle-count">已对战 0 次</div>
+
+  <button class="skip-btn" onclick="skipBattle()">换一对</button>
+  <div class="battle-status" id="battle-status">已对战 0 次</div>
 </div>
 
+<!-- RANKING PAGE -->
 <div id="rank-page" class="page">
   <h2>🏆 排行榜</h2>
   <div class="ranking-list" id="ranking-list"></div>
 </div>
 
+<!-- STATS PAGE -->
 <div id="stats-page" class="page">
   <h2>📊 统计</h2>
   <div class="stats-grid" id="stats-grid"></div>
@@ -341,6 +324,7 @@
   <div class="bar-chart" id="bar-chart"></div>
 </div>
 
+<!-- ADD FOOD PAGE -->
 <div id="add-page" class="page">
   <h2>➕ 添加食物</h2>
   <div class="form-group">
@@ -365,130 +349,237 @@
   </div>
   <button class="add-btn" onclick="addFood()">添加到食物库</button>
   <br><br>
-  <div class="section-title">食物库（{{ count }} 种）</div>
+  <div class="section-title">食物库（<span id="food-count">0</span> 种）</div>
   <div id="food-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;"></div>
 </div>
 
+<!-- CHAMPION OVERLAY -->
+<div class="champion-overlay" id="champion-overlay">
+  <div class="champion-crown" id="champ-emoji">🍜</div>
+  <div class="champion-name" id="champ-name">冠军！</div>
+  <div class="champion-sub" id="champ-sub">连赢 5 场，当之无愧！</div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="continueWithChamp()">继续对战</button>
+    <button class="btn-ghost" onclick="resetBattle()">重新开始</button>
+  </div>
+</div>
+
+<!-- NAV -->
 <nav>
-  <button class="active" onclick="switchPage('battle')"><span>⚔️</span>对战</button>
-  <button onclick="switchPage('rank')"><span>🏆</span>排行</button>
-  <button onclick="switchPage('stats')"><span>📊</span>统计</button>
-  <button onclick="switchPage('add')"><span>➕</span>添加</button>
+  <button class="nav-btn active" id="nav-battle" onclick="switchPage('battle', this)">
+    <span class="icon">⚔️</span>对战
+  </button>
+  <button class="nav-btn" id="nav-rank" onclick="switchPage('rank', this)">
+    <span class="icon">🏆</span>排行
+  </button>
+  <button class="nav-btn" id="nav-stats" onclick="switchPage('stats', this)">
+    <span class="icon">📊</span>统计
+  </button>
+  <button class="nav-btn" id="nav-add" onclick="switchPage('add', this)">
+    <span class="icon">➕</span>添加
+  </button>
 </nav>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ---- DATA ----
+// ===================== DATA =====================
 const DEFAULT_FOODS = [
-  { id: 1, name: '拉面', emoji: '🍜', cat: '日料', elo: 1200, battles: 0, wins: 0 },
-  { id: 2, name: '寿司', emoji: '🍣', cat: '日料', elo: 1200, battles: 0, wins: 0 },
-  { id: 3, name: '披萨', emoji: '🍕', cat: '西餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 4, name: '炸鸡', emoji: '🍗', cat: '快餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 5, name: '麻婆豆腐', emoji: '🫕', cat: '中餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 6, name: '汉堡', emoji: '🍔', cat: '快餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 7, name: '麻辣烫', emoji: '🍲', cat: '中餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 8, name: '章鱼小丸子', emoji: '🐙', cat: '日料', elo: 1200, battles: 0, wins: 0 },
-  { id: 9, name: '提拉米苏', emoji: '🍰', cat: '甜点', elo: 1200, battles: 0, wins: 0 },
-  { id: 10, name: '珍珠奶茶', emoji: '🧋', cat: '饮品', elo: 1200, battles: 0, wins: 0 },
-  { id: 11, name: '煎饺', emoji: '🥟', cat: '中餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 12, name: '意面', emoji: '🍝', cat: '西餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 13, name: '烤串', emoji: '🍢', cat: '小吃', elo: 1200, battles: 0, wins: 0 },
-  { id: 14, name: '三明治', emoji: '🥪', cat: '西餐', elo: 1200, battles: 0, wins: 0 },
-  { id: 15, name: '冰淇淋', emoji: '🍦', cat: '甜点', elo: 1200, battles: 0, wins: 0 },
-  { id: 16, name: '北京烤鸭', emoji: '🦆', cat: '中餐', elo: 1200, battles: 0, wins: 0 },
+  { id:1,  name:'拉面',     emoji:'🍜', cat:'日料', elo:1200, battles:0, wins:0 },
+  { id:2,  name:'寿司',     emoji:'🍣', cat:'日料', elo:1200, battles:0, wins:0 },
+  { id:3,  name:'披萨',     emoji:'🍕', cat:'西餐', elo:1200, battles:0, wins:0 },
+  { id:4,  name:'炸鸡',     emoji:'🍗', cat:'快餐', elo:1200, battles:0, wins:0 },
+  { id:5,  name:'麻婆豆腐', emoji:'🫕', cat:'中餐', elo:1200, battles:0, wins:0 },
+  { id:6,  name:'汉堡',     emoji:'🍔', cat:'快餐', elo:1200, battles:0, wins:0 },
+  { id:7,  name:'麻辣烫',   emoji:'🍲', cat:'中餐', elo:1200, battles:0, wins:0 },
+  { id:8,  name:'章鱼小丸子',emoji:'🐙', cat:'日料', elo:1200, battles:0, wins:0 },
+  { id:9,  name:'提拉米苏', emoji:'🍰', cat:'甜点', elo:1200, battles:0, wins:0 },
+  { id:10, name:'珍珠奶茶', emoji:'🧋', cat:'饮品', elo:1200, battles:0, wins:0 },
+  { id:11, name:'煎饺',     emoji:'🥟', cat:'中餐', elo:1200, battles:0, wins:0 },
+  { id:12, name:'意面',     emoji:'🍝', cat:'西餐', elo:1200, battles:0, wins:0 },
+  { id:13, name:'烤串',     emoji:'🍢', cat:'小吃', elo:1200, battles:0, wins:0 },
+  { id:14, name:'三明治',   emoji:'🥪', cat:'西餐', elo:1200, battles:0, wins:0 },
+  { id:15, name:'冰淇淋',   emoji:'🍦', cat:'甜点', elo:1200, battles:0, wins:0 },
+  { id:16, name:'北京烤鸭', emoji:'🦆', cat:'中餐', elo:1200, battles:0, wins:0 },
 ];
 
 const EMOJIS = ['🍜','🍣','🍕','🍗','🫕','🍔','🍲','🐙','🍰','🧋','🥟','🍝','🍢','🥪','🍦','🦆','🍱','🥘','🍛','🥗','🌮','🌯','🍞','🧆','🥩','🍤','🦞','🦐','🥓','🍳','🥞','🧇'];
 
 let foods = JSON.parse(localStorage.getItem('fb_foods') || 'null') || JSON.parse(JSON.stringify(DEFAULT_FOODS));
-let battleCount = parseInt(localStorage.getItem('fb_battles') || '0');
-let currentPair = [null, null];
+let totalBattles = parseInt(localStorage.getItem('fb_battles') || '0');
 let selectedEmoji = '🍜';
 let busy = false;
 
+// Battle state
+let champIdx = null;   // index of current reigning champ (null = no champ yet)
+let challIdx = null;   // index of current challenger
+let champStreak = 0;   // consecutive wins of current champ
+
 function save() {
   localStorage.setItem('fb_foods', JSON.stringify(foods));
-  localStorage.setItem('fb_battles', battleCount);
+  localStorage.setItem('fb_battles', totalBattles);
 }
 
-// ---- ELO ----
-function updateElo(winner, loser) {
+// ===================== ELO =====================
+function updateElo(winIdx, loseIdx) {
   const K = 32;
-  const ea = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
-  const eb = 1 - ea;
-  winner.elo = Math.round(winner.elo + K * (1 - ea));
-  loser.elo = Math.round(loser.elo + K * (0 - eb));
-  winner.battles++; winner.wins++;
-  loser.battles++;
+  const ea = 1 / (1 + Math.pow(10, (foods[loseIdx].elo - foods[winIdx].elo) / 400));
+  foods[winIdx].elo = Math.round(foods[winIdx].elo + K * (1 - ea));
+  foods[loseIdx].elo = Math.round(foods[loseIdx].elo + K * (0 - (1 - ea)));
+  foods[winIdx].battles++; foods[winIdx].wins++;
+  foods[loseIdx].battles++;
 }
 
-// ---- BATTLE ----
-function getRandomPair() {
-  if (foods.length < 2) return [0, 1];
-  const idx1 = Math.floor(Math.random() * foods.length);
-  let idx2;
-  do { idx2 = Math.floor(Math.random() * foods.length); } while (idx2 === idx1);
-  return [idx1, idx2];
+// ===================== BATTLE =====================
+function getRandomIdx(excludes) {
+  if (foods.length < 2) return 0;
+  let idx;
+  let tries = 0;
+  do {
+    idx = Math.floor(Math.random() * foods.length);
+    tries++;
+  } while (excludes.includes(idx) && tries < 50);
+  return idx;
 }
 
-function renderBattle(pair) {
-  currentPair = pair;
-  const [a, b] = pair.map(i => foods[i]);
-  document.getElementById('emoji-left').textContent = a.emoji;
-  document.getElementById('name-left').textContent = a.name;
-  document.getElementById('elo-left').textContent = `ELO ${a.elo}`;
-  document.getElementById('cat-left').textContent = a.cat;
-  document.getElementById('emoji-right').textContent = b.emoji;
-  document.getElementById('name-right').textContent = b.name;
-  document.getElementById('elo-right').textContent = `ELO ${b.elo}`;
-  document.getElementById('cat-right').textContent = b.cat;
-  document.getElementById('battle-count').textContent = `已对战 ${battleCount} 次`;
-  const cl = document.getElementById('card-left');
-  const cr = document.getElementById('card-right');
-  cl.classList.remove('winner-anim','loser-anim','loser-left');
-  cr.classList.remove('winner-anim','loser-anim','loser-left');
-  cl.style.opacity = ''; cr.style.opacity = '';
+function renderCard(side, idx, isChamp) {
+  const f = foods[idx];
+  const s = side;
+  document.getElementById('emoji-' + s).textContent = f.emoji;
+  document.getElementById('name-' + s).textContent = f.name;
+  document.getElementById('elo-' + s).textContent = 'ELO ' + f.elo;
+  document.getElementById('cat-' + s).textContent = f.cat;
+  const winsEl = document.getElementById('wins-' + s);
+  if (isChamp && champStreak > 0) {
+    winsEl.textContent = '🔥 连胜 ' + champStreak + ' 场';
+  } else {
+    winsEl.textContent = '';
+  }
+  const badge = document.getElementById('badge-' + s);
+  if (isChamp && champStreak > 0) {
+    badge.textContent = '👑 卫冕';
+    badge.style.display = 'block';
+  } else if (!isChamp) {
+    badge.textContent = '挑战者';
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+  const card = document.getElementById('card-' + s);
+  card.classList.remove('anim-winner','anim-fly-right','anim-fly-left','anim-enter','champion-card');
+  if (isChamp && champStreak > 0) card.classList.add('champion-card');
 }
 
-function nextBattle() {
-  if (foods.length < 2) return;
-  renderBattle(getRandomPair());
+function updateStreakBar() {
+  for (let i = 0; i < 5; i++) {
+    const dot = document.getElementById('dot' + i);
+    dot.classList.toggle('filled', i < champStreak);
+  }
+  document.getElementById('streak-label').textContent = champStreak + ' / 5';
+  document.getElementById('battle-status').textContent = '已对战 ' + totalBattles + ' 次';
+}
+
+function startFreshBattle() {
+  champStreak = 0;
+  champIdx = getRandomIdx([]);
+  challIdx = getRandomIdx([champIdx]);
+  renderCard('left', champIdx, true);
+  renderCard('right', challIdx, false);
+  updateStreakBar();
 }
 
 function chooseSide(side) {
   if (busy) return;
   busy = true;
-  const winIdx = side === 'left' ? currentPair[0] : currentPair[1];
-  const loseIdx = side === 'left' ? currentPair[1] : currentPair[0];
-  const winCard = document.getElementById(side === 'left' ? 'card-left' : 'card-right');
-  const loseCard = document.getElementById(side === 'left' ? 'card-right' : 'card-left');
 
-  updateElo(foods[winIdx], foods[loseIdx]);
-  battleCount++;
+  const leftWins = side === 'left';
+  const winIdx  = leftWins ? champIdx : challIdx;
+  const loseIdx = leftWins ? challIdx : champIdx;
+  const winSide  = leftWins ? 'left'  : 'right';
+  const loseSide = leftWins ? 'right' : 'left';
+
+  updateElo(winIdx, loseIdx);
+  totalBattles++;
   save();
 
-  winCard.classList.add('winner-anim');
-  loseCard.classList.add(side === 'left' ? 'loser-anim' : 'loser-left');
+  // Winner pulse
+  document.getElementById('card-' + winSide).classList.add('anim-winner');
+  // Loser flies out
+  document.getElementById('card-' + loseSide).classList.add(loseSide === 'right' ? 'anim-fly-right' : 'anim-fly-left');
 
-  setTimeout(() => {
-    busy = false;
-    nextBattle();
-  }, 550);
+  if (leftWins) {
+    // Left (champ) wins → stays left, new challenger on right
+    champStreak++;
+    updateStreakBar();
+    if (champStreak >= 5) {
+      setTimeout(showChampion, 520);
+      return;
+    }
+    setTimeout(() => {
+      challIdx = getRandomIdx([champIdx]);
+      renderCard('right', challIdx, false);
+      document.getElementById('card-right').classList.add('anim-enter');
+      document.getElementById('card-left').classList.remove('anim-winner','champion-card');
+      document.getElementById('card-left').classList.add('champion-card');
+      document.getElementById('badge-left').textContent = '👑 卫冕';
+      document.getElementById('badge-left').style.display = 'block';
+      document.getElementById('wins-left').textContent = '🔥 连胜 ' + champStreak + ' 场';
+      busy = false;
+    }, 520);
+  } else {
+    // Right (challenger) wins → new champ, moves to left, new challenger on right
+    champIdx = challIdx;
+    champStreak = 1;
+    updateStreakBar();
+    setTimeout(() => {
+      challIdx = getRandomIdx([champIdx]);
+      renderCard('left', champIdx, true);
+      document.getElementById('card-left').classList.add('anim-enter');
+      renderCard('right', challIdx, false);
+      document.getElementById('card-right').classList.add('anim-enter');
+      busy = false;
+    }, 520);
+  }
 }
 
-// ---- RANKING ----
+function skipBattle() {
+  if (busy) return;
+  startFreshBattle();
+}
+
+function showChampion() {
+  const f = foods[champIdx];
+  document.getElementById('champ-emoji').textContent = f.emoji;
+  document.getElementById('champ-name').textContent = f.name + ' 🎉';
+  document.getElementById('champ-sub').textContent = '连赢 5 场！当之无愧的今日冠军！';
+  document.getElementById('champion-overlay').classList.add('show');
+  busy = false;
+}
+
+function continueWithChamp() {
+  // Champ keeps going, reset streak counter but keep champ
+  document.getElementById('champion-overlay').classList.remove('show');
+  champStreak = 0;
+  challIdx = getRandomIdx([champIdx]);
+  renderCard('left', champIdx, true);
+  document.getElementById('wins-left').textContent = '前冠军继续！';
+  renderCard('right', challIdx, false);
+  updateStreakBar();
+}
+
+function resetBattle() {
+  document.getElementById('champion-overlay').classList.remove('show');
+  startFreshBattle();
+}
+
+// ===================== RANKING =====================
 function renderRanking() {
   const sorted = [...foods].sort((a, b) => b.elo - a.elo);
-  const list = document.getElementById('ranking-list');
-  list.innerHTML = sorted.map((f, i) => {
-    let numClass = '';
-    if (i === 0) numClass = 'gold';
-    else if (i === 1) numClass = 'silver';
-    else if (i === 2) numClass = 'bronze';
+  document.getElementById('ranking-list').innerHTML = sorted.map((f, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
     const winRate = f.battles > 0 ? Math.round(f.wins / f.battles * 100) : 0;
     return `<div class="rank-item">
-      <div class="rank-num ${numClass}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</div>
+      <div class="rank-num">${medal}</div>
       <div class="rank-emoji">${f.emoji}</div>
       <div class="rank-info">
         <div class="rank-name">${f.name}</div>
@@ -499,37 +590,34 @@ function renderRanking() {
   }).join('');
 }
 
-// ---- STATS ----
+// ===================== STATS =====================
 function renderStats() {
-  const total = foods.reduce((s, f) => s + f.battles, 0) / 2;
   const topFood = [...foods].sort((a, b) => b.elo - a.elo)[0];
   const mostBattled = [...foods].sort((a, b) => b.battles - a.battles)[0];
-
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card"><div class="val">${foods.length}</div><div class="label">食物种类</div></div>
-    <div class="stat-card"><div class="val">${battleCount}</div><div class="label">总对战次数</div></div>
-    <div class="stat-card"><div class="val">${topFood ? topFood.emoji : '—'}</div><div class="label">当前冠军<br><small>${topFood ? topFood.name : ''}</small></div></div>
-    <div class="stat-card"><div class="val">${mostBattled ? mostBattled.battles : 0}</div><div class="label">最多对战<br><small>${mostBattled ? mostBattled.name : ''}</small></div></div>
+    <div class="stat-card"><div class="val">${totalBattles}</div><div class="label">总对战次数</div></div>
+    <div class="stat-card"><div class="val">${topFood ? topFood.emoji : '—'}</div><div class="label">ELO 冠军<br><small style="color:var(--accent2)">${topFood ? topFood.name : ''}</small></div></div>
+    <div class="stat-card"><div class="val">${mostBattled ? mostBattled.battles : 0}</div><div class="label">最多对战<br><small style="color:var(--accent2)">${mostBattled ? mostBattled.name : ''}</small></div></div>
   `;
-
   const catCount = {};
   foods.forEach(f => catCount[f.cat] = (catCount[f.cat] || 0) + 1);
   const maxCat = Math.max(...Object.values(catCount));
   document.getElementById('bar-chart').innerHTML = Object.entries(catCount)
-    .sort((a,b) => b[1]-a[1])
+    .sort((a, b) => b[1] - a[1])
     .map(([cat, count]) => `
       <div class="bar-row">
         <div class="bar-label">${cat}</div>
         <div class="bar-track">
-          <div class="bar-fill" style="width:${count/maxCat*100}%">${count}种</div>
+          <div class="bar-fill" style="width:${count / maxCat * 100}%">${count}种</div>
         </div>
       </div>`).join('');
 }
 
-// ---- ADD FOOD ----
+// ===================== ADD FOOD =====================
 function renderEmojiPicker() {
   document.getElementById('emoji-picker').innerHTML = EMOJIS.map(e =>
-    `<button class="emoji-btn ${e===selectedEmoji?'selected':''}" onclick="selectEmoji('${e}')">${e}</button>`
+    `<button class="emoji-btn ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</button>`
   ).join('');
 }
 
@@ -540,35 +628,36 @@ function selectEmoji(e) {
 
 function addFood() {
   const name = document.getElementById('food-name').value.trim();
-  const cat = document.getElementById('food-cat').value;
+  const cat  = document.getElementById('food-cat').value;
   if (!name) { showToast('请输入食物名称！'); return; }
   if (foods.find(f => f.name === name)) { showToast('已经有这个食物了！'); return; }
-  const id = Date.now();
-  foods.push({ id, name, emoji: selectedEmoji, cat, elo: 1200, battles: 0, wins: 0 });
+  foods.push({ id: Date.now(), name, emoji: selectedEmoji, cat, elo: 1200, battles: 0, wins: 0 });
   save();
   document.getElementById('food-name').value = '';
   renderFoodList();
-  showToast(`${selectedEmoji} ${name} 已添加！`);
+  showToast(selectedEmoji + ' ' + name + ' 已添加！');
 }
 
 function removeFood(id) {
+  if (foods.length <= 2) { showToast('至少保留 2 种食物！'); return; }
   foods = foods.filter(f => f.id !== id);
   save();
   renderFoodList();
-  nextBattle();
+  startFreshBattle();
 }
 
 function renderFoodList() {
+  document.getElementById('food-count').textContent = foods.length;
   document.getElementById('food-list').innerHTML = foods.map(f =>
     `<div style="background:var(--card);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:14px;">
-      <span>${f.emoji}</span><span>${f.name}</span>
-      <span style="color:var(--muted);font-size:11px;">${f.cat}</span>
-      <button onclick="removeFood(${f.id})" style="background:none;border:none;color:#555;cursor:pointer;font-size:16px;margin-left:auto;">×</button>
+      <span>${f.emoji}</span><span style="font-weight:600">${f.name}</span>
+      <span style="color:var(--muted);font-size:11px">${f.cat}</span>
+      <button onclick="removeFood(${f.id})" style="background:none;border:none;color:#555;cursor:pointer;font-size:18px;margin-left:auto;line-height:1;">×</button>
     </div>`
   ).join('');
 }
 
-// ---- TOAST ----
+// ===================== TOAST =====================
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -576,19 +665,19 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ---- NAV ----
-function switchPage(name) {
+// ===================== NAV =====================
+function switchPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(name + '-page').classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (name === 'rank') renderRanking();
+  if (btn) btn.classList.add('active');
+  if (name === 'rank')  renderRanking();
   if (name === 'stats') renderStats();
-  if (name === 'add') { renderEmojiPicker(); renderFoodList(); }
+  if (name === 'add')   { renderEmojiPicker(); renderFoodList(); }
 }
 
-// ---- INIT ----
-nextBattle();
+// ===================== INIT =====================
+startFreshBattle();
 </script>
 </body>
 </html>
