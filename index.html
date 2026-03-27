@@ -502,10 +502,16 @@ function chooseSide(side) {
   totalBattles++;
   save();
 
-  // Winner pulse
-  document.getElementById('card-' + winSide).classList.add('anim-winner');
-  // Loser flies out
-  document.getElementById('card-' + loseSide).classList.add(loseSide === 'right' ? 'anim-fly-right' : 'anim-fly-left');
+  // 强制 reflow，让 CSS 动画可以在同一元素上重播
+  const winCard  = document.getElementById('card-' + winSide);
+  const loseCard = document.getElementById('card-' + loseSide);
+  winCard.classList.remove('anim-winner', 'anim-fly-right', 'anim-fly-left', 'anim-enter');
+  loseCard.classList.remove('anim-winner', 'anim-fly-right', 'anim-fly-left', 'anim-enter');
+  void winCard.offsetWidth;   // force reflow
+  void loseCard.offsetWidth;  // force reflow
+
+  winCard.classList.add('anim-winner');
+  loseCard.classList.add(loseSide === 'right' ? 'anim-fly-right' : 'anim-fly-left');
 
   if (leftWins) {
     // Left (champ) wins → stays left, new challenger on right
@@ -518,8 +524,10 @@ function chooseSide(side) {
     setTimeout(() => {
       challIdx = getRandomIdx([champIdx]);
       renderCard('right', challIdx, false);
+      void document.getElementById('card-right').offsetWidth;
       document.getElementById('card-right').classList.add('anim-enter');
       document.getElementById('card-left').classList.remove('anim-winner','champion-card');
+      void document.getElementById('card-left').offsetWidth;
       document.getElementById('card-left').classList.add('champion-card');
       document.getElementById('badge-left').textContent = '👑 卫冕';
       document.getElementById('badge-left').style.display = 'block';
@@ -534,8 +542,10 @@ function chooseSide(side) {
     setTimeout(() => {
       challIdx = getRandomIdx([champIdx]);
       renderCard('left', champIdx, true);
+      void document.getElementById('card-left').offsetWidth;
       document.getElementById('card-left').classList.add('anim-enter');
       renderCard('right', challIdx, false);
+      void document.getElementById('card-right').offsetWidth;
       document.getElementById('card-right').classList.add('anim-enter');
       busy = false;
     }, 520);
