@@ -129,6 +129,9 @@
   .add-btn { width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:14px; font-size:16px; font-weight:700; cursor:pointer; }
   .add-btn:hover { background:#ff5252; }
 
+  .import-tab { background:var(--card); border:1px solid #333; color:var(--muted); border-radius:20px; padding:6px 12px; font-size:12px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+  .import-tab.active { border-color:var(--accent2); color:var(--accent2); background:#2a2010; }
+
   .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--green); color:#000; padding:10px 20px; border-radius:20px; font-weight:700; font-size:14px; opacity:0; transition:opacity .3s,transform .3s; z-index:300; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:#333; border-radius:4px; }
@@ -226,24 +229,78 @@
 <div id="add-page" class="page">
   <h2>➕ 添加食物</h2>
 
-  <!-- 外卖导入 -->
+  <!-- 导入区 -->
   <div class="analysis-card" style="margin-bottom:16px">
-    <h3>📦 从外卖记录导入</h3>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">
-      美团 / 饿了么 / 淘宝闪购 → 进入订单详情页 → 全选文字复制 → 粘贴到下方<br>
-      <span style="color:#666">（无需安装插件，直接复制网页文字即可）</span>
-    </p>
-    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-      <span style="font-size:12px;background:#1e2a1e;color:#6bcb77;padding:4px 10px;border-radius:10px">美团外卖</span>
-      <span style="font-size:12px;background:#1e2a1e;color:#6bcb77;padding:4px 10px;border-radius:10px">饿了么</span>
-      <span style="font-size:12px;background:#1e2a1e;color:#6bcb77;padding:4px 10px;border-radius:10px">淘宝闪购</span>
+    <h3>📦 导入食物</h3>
+
+    <!-- 方式 tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="import-tab active" id="itab-text"   onclick="switchImportTab('text',this)">📋 粘贴文字</button>
+      <button class="import-tab"        id="itab-image"  onclick="switchImportTab('image',this)">📸 截图识别</button>
+      <button class="import-tab"        id="itab-csv"    onclick="switchImportTab('csv',this)">📊 CSV文件</button>
+      <button class="import-tab"        id="itab-backup" onclick="switchImportTab('backup',this)">💾 备份恢复</button>
     </div>
-    <textarea id="import-text" placeholder="在这里粘贴订单文字...&#10;&#10;例如：&#10;宫保鸡丁盖浇饭 ×1 ¥18.0&#10;可乐（中杯）×2 ¥7.0&#10;红烧肉盖饭 ×1 ¥22.0"
-      style="width:100%;height:110px;background:#111;border:1px solid #333;border-radius:10px;padding:10px;color:var(--text);font-size:13px;resize:vertical;outline:none;line-height:1.6"></textarea>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="add-btn" style="flex:1" onclick="parseImport()">🔍 解析并导入</button>
-      <button class="btn-ghost" style="padding:12px 14px;border-radius:var(--radius)" onclick="document.getElementById('import-text').value=''">清空</button>
+
+    <!-- 文字粘贴 -->
+    <div id="import-panel-text">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.6">美团/饿了么/淘宝闪购 → 订单详情页 → 全选复制 → 粘贴到这里</p>
+      <textarea id="import-text" placeholder="宫保鸡丁盖浇饭 ×1 ¥18.0&#10;可乐（中杯）×2 ¥7.0&#10;红烧肉盖饭 ×1 ¥22.0"
+        style="width:100%;height:100px;background:#111;border:1px solid #333;border-radius:10px;padding:10px;color:var(--text);font-size:13px;resize:vertical;outline:none;line-height:1.6"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="add-btn" style="flex:1" onclick="parseImport()">🔍 解析并导入</button>
+        <button class="btn-ghost" style="padding:12px 14px;border-radius:var(--radius)" onclick="document.getElementById('import-text').value=''">清空</button>
+      </div>
     </div>
+
+    <!-- 截图识别 -->
+    <div id="import-panel-image" style="display:none">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">上传外卖 App 截图 / 菜单照片，自动识别文字提取食物名<br><span style="color:#555">首次使用需加载 OCR 引擎（约 4MB）</span></p>
+      <div id="ocr-drop-zone" onclick="document.getElementById('ocr-file').click()"
+        style="border:2px dashed #444;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:border-color .2s"
+        ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+        ondragleave="this.style.borderColor='#444'"
+        ondrop="handleOcrDrop(event)">
+        <div style="font-size:36px;margin-bottom:8px">📸</div>
+        <div style="font-size:14px;color:var(--muted)">点击选图 / 拖拽上传</div>
+        <div style="font-size:12px;color:#555;margin-top:4px">支持 PNG / JPG / 截图</div>
+      </div>
+      <input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="runOcr(this.files[0])">
+      <div id="ocr-preview" style="margin-top:10px;display:none">
+        <img id="ocr-img" style="max-width:100%;border-radius:10px;max-height:180px;object-fit:contain">
+      </div>
+      <div id="ocr-status" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+    </div>
+
+    <!-- CSV -->
+    <div id="import-panel-csv" style="display:none">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">每行一个食物，格式：<code style="background:#222;padding:2px 6px;border-radius:4px">食物名,分类</code><br>分类可选：中餐/日料/西餐/快餐/甜点/小吃/饮品（不填默认中餐）</p>
+      <button class="btn-ghost" style="margin-bottom:10px;font-size:13px;padding:8px 16px" onclick="downloadCsvTemplate()">⬇ 下载模板</button>
+      <div id="csv-drop-zone" onclick="document.getElementById('csv-file').click()"
+        style="border:2px dashed #444;border-radius:12px;padding:24px;text-align:center;cursor:pointer"
+        ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+        ondragleave="this.style.borderColor='#444'"
+        ondrop="handleCsvDrop(event)">
+        <div style="font-size:32px;margin-bottom:6px">📊</div>
+        <div style="font-size:14px;color:var(--muted)">点击上传 CSV 文件</div>
+      </div>
+      <input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="parseCsv(this.files[0])">
+    </div>
+
+    <!-- 备份恢复 -->
+    <div id="import-panel-backup" style="display:none">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px">导出包含所有食物和 ELO 数据的 JSON 文件，可在其他设备恢复</p>
+      <button class="add-btn" style="margin-bottom:10px" onclick="exportJson()">⬇ 导出备份（JSON）</button>
+      <div id="backup-drop-zone" onclick="document.getElementById('backup-file').click()"
+        style="border:2px dashed #444;border-radius:12px;padding:24px;text-align:center;cursor:pointer"
+        ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+        ondragleave="this.style.borderColor='#444'"
+        ondrop="handleBackupDrop(event)">
+        <div style="font-size:32px;margin-bottom:6px">📁</div>
+        <div style="font-size:14px;color:var(--muted)">点击上传 JSON 备份恢复</div>
+      </div>
+      <input type="file" id="backup-file" accept=".json" style="display:none" onchange="importJson(this.files[0])">
+    </div>
+
     <div id="import-result" style="margin-top:10px;font-size:13px"></div>
   </div>
 
@@ -673,6 +730,16 @@ function renderPrediction() {
   }).join('');
 }
 
+// =================== IMPORT TABS ===================
+function switchImportTab(name, btn) {
+  ['text','image','csv','backup'].forEach(t=>{
+    document.getElementById('import-panel-'+t).style.display = t===name?'block':'none';
+  });
+  document.querySelectorAll('.import-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('import-result').innerHTML='';
+}
+
 // =================== IMPORT ===================
 // 饮品关键词
 const DRINK_KW=['奶茶','可乐','果汁','咖啡','茶','豆浆','汤','饮','水','粥','汁','牛奶','酸奶'];
@@ -773,6 +840,138 @@ function parseImport() {
   document.getElementById('import-result').innerHTML = resultHtml;
   document.getElementById('import-text').value='';
   showToast(`导入 ${added} 种新食物！`);
+}
+
+// =================== OCR (Tesseract.js) ===================
+let tesseractLoaded = false;
+
+function handleOcrDrop(e) {
+  e.preventDefault();
+  document.getElementById('ocr-drop-zone').style.borderColor='#444';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) runOcr(file);
+}
+
+function runOcr(file) {
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const img = document.getElementById('ocr-img');
+  img.src = url;
+  document.getElementById('ocr-preview').style.display = 'block';
+  document.getElementById('ocr-status').textContent = '⏳ 加载 OCR 引擎...';
+  document.getElementById('import-result').innerHTML = '';
+
+  // 动态加载 Tesseract.js
+  if (!tesseractLoaded) {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = () => { tesseractLoaded=true; doOcr(url); };
+    s.onerror = () => { document.getElementById('ocr-status').textContent='❌ OCR 引擎加载失败，请检查网络'; };
+    document.head.appendChild(s);
+  } else {
+    doOcr(url);
+  }
+}
+
+async function doOcr(imgUrl) {
+  const statusEl = document.getElementById('ocr-status');
+  try {
+    statusEl.textContent = '🔍 识别中（简体中文）...';
+    const worker = await Tesseract.createWorker('chi_sim', 1, {
+      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+      corePath:   'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
+      logger: m => { if(m.status==='recognizing text') statusEl.textContent=`🔍 识别中... ${Math.round(m.progress*100)}%`; }
+    });
+    const { data: { text } } = await worker.recognize(imgUrl);
+    await worker.terminate();
+    statusEl.textContent = '✅ 识别完成，开始解析...';
+    document.getElementById('import-text').value = text;
+    document.getElementById('itab-text').click();  // 切到文字 tab 让用户确认
+    statusEl.textContent = '';
+    showToast('OCR 完成！请在文字标签页确认后导入');
+  } catch(e) {
+    statusEl.textContent = '❌ 识别失败：' + e.message;
+  }
+}
+
+// =================== CSV ===================
+function downloadCsvTemplate() {
+  const csv = '食物名称,分类\n宫保鸡丁饭,中餐\n拿铁咖啡,饮品\n提拉米苏,甜点\n麻辣烫,小吃\n';
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'foodbattle_template.csv';
+  a.click();
+}
+
+function handleCsvDrop(e) {
+  e.preventDefault();
+  document.getElementById('csv-drop-zone').style.borderColor='#444';
+  const file = e.dataTransfer.files[0];
+  if (file) parseCsv(file);
+}
+
+function parseCsv(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l && !l.startsWith('食物'));
+    let added=0, skipped=0;
+    const imported=[];
+    lines.forEach(line=>{
+      const parts = line.split(',');
+      const name = parts[0].trim();
+      const cat  = parts[1]?.trim() || '中餐';
+      if (!name || name.length<1) return;
+      if (foods.find(f=>f.name===name)) { skipped++; return; }
+      foods.push({id:Date.now()+Math.random(), name, emoji:guessEmoji(name), cat, elo:1200, battles:0, wins:0});
+      imported.push(name); added++;
+    });
+    save(); renderFoodList();
+    document.getElementById('import-result').innerHTML =
+      `<div style="color:var(--green)">✅ CSV 导入 ${added} 种，跳过 ${skipped} 种重复</div>
+       <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
+         ${imported.map(n=>`<span style="background:#1e2a1e;color:#aaa;padding:3px 8px;border-radius:8px;font-size:12px">${guessEmoji(n)} ${n}</span>`).join('')}
+       </div>`;
+    showToast(`CSV 导入 ${added} 种食物！`);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// =================== JSON BACKUP ===================
+function exportJson() {
+  const data = { version:1, foods, totalBattles, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `foodbattle_backup_${new Date().toLocaleDateString('zh')}.json`;
+  a.click();
+  showToast('备份已下载！');
+}
+
+function handleBackupDrop(e) {
+  e.preventDefault();
+  document.getElementById('backup-drop-zone').style.borderColor='#444';
+  const file = e.dataTransfer.files[0];
+  if (file) importJson(file);
+}
+
+function importJson(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.foods || !Array.isArray(data.foods)) throw new Error('格式不对');
+      foods = data.foods;
+      if (data.totalBattles) totalBattles = data.totalBattles;
+      save(); renderFoodList(); startFreshBattle();
+      document.getElementById('import-result').innerHTML =
+        `<div style="color:var(--green)">✅ 恢复成功！导入 ${foods.length} 种食物，${totalBattles} 次对战记录</div>`;
+      showToast(`恢复成功！${foods.length} 种食物`);
+    } catch(err) {
+      document.getElementById('import-result').innerHTML =
+        `<div style="color:var(--accent)">❌ 文件格式错误：${err.message}</div>`;
+    }
+  };
+  reader.readAsText(file);
 }
 
 // =================== ADD FOOD ===================
