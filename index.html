@@ -130,27 +130,7 @@
   .food-card .cat-tag { font-size: 11px; color: var(--muted); margin-top: 4px; }
   .food-card .wins-tag { font-size: 12px; color: var(--green); margin-top: 6px; font-weight: 600; }
 
-  /* Animations */
-  .food-card.anim-winner { animation: winner-pulse 0.35s ease; }
-  .food-card.anim-fly-right { animation: fly-right 0.5s ease forwards; }
-  .food-card.anim-fly-left { animation: fly-left 0.5s ease forwards; }
-  .food-card.anim-enter { animation: card-enter 0.35s ease; }
-
-  @keyframes winner-pulse {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.07); box-shadow: 0 0 24px rgba(107,203,119,0.5); border-color: var(--green); }
-    100% { transform: scale(1); }
-  }
-  @keyframes fly-right {
-    to { transform: translateX(350px) rotate(28deg); opacity: 0; }
-  }
-  @keyframes fly-left {
-    to { transform: translateX(-350px) rotate(-28deg); opacity: 0; }
-  }
-  @keyframes card-enter {
-    from { transform: translateX(80px); opacity: 0; }
-    to   { transform: translateX(0); opacity: 1; }
-  }
+  /* Animations handled by Web Animations API in JS */
 
   /* Champion overlay */
   .champion-overlay {
@@ -430,52 +410,56 @@ function updateElo(winIdx, loseIdx) {
   foods[loseIdx].battles++;
 }
 
+// ===================== ANIMATIONS (Web Animations API) =====================
+function animFly(card, toRight) {
+  return card.animate([
+    { transform: 'translateX(0) rotate(0deg)', opacity: 1 },
+    { transform: `translateX(${toRight ? 380 : -380}px) rotate(${toRight ? 28 : -28}deg)`, opacity: 0 }
+  ], { duration: 480, easing: 'ease', fill: 'none' });
+}
+function animPulse(card) {
+  return card.animate([
+    { transform: 'scale(1)', boxShadow: 'none' },
+    { transform: 'scale(1.07)', boxShadow: '0 0 24px rgba(107,203,119,0.5)' },
+    { transform: 'scale(1)' }
+  ], { duration: 340, easing: 'ease' });
+}
+function animEnter(card) {
+  card.animate([
+    { transform: 'translateX(60px)', opacity: 0 },
+    { transform: 'translateX(0)',    opacity: 1 }
+  ], { duration: 320, easing: 'ease' });
+}
+
 // ===================== BATTLE =====================
 function getRandomIdx(excludes) {
   if (foods.length < 2) return 0;
-  let idx;
-  let tries = 0;
-  do {
-    idx = Math.floor(Math.random() * foods.length);
-    tries++;
-  } while (excludes.includes(idx) && tries < 50);
+  let idx, tries = 0;
+  do { idx = Math.floor(Math.random() * foods.length); tries++; }
+  while (excludes.includes(idx) && tries < 50);
   return idx;
 }
 
 function renderCard(side, idx, isChamp) {
   const f = foods[idx];
-  const s = side;
-  document.getElementById('emoji-' + s).textContent = f.emoji;
-  document.getElementById('name-' + s).textContent = f.name;
-  document.getElementById('elo-' + s).textContent = 'ELO ' + f.elo;
-  document.getElementById('cat-' + s).textContent = f.cat;
-  const winsEl = document.getElementById('wins-' + s);
-  if (isChamp && champStreak > 0) {
-    winsEl.textContent = '🔥 连胜 ' + champStreak + ' 场';
-  } else {
-    winsEl.textContent = '';
-  }
-  const badge = document.getElementById('badge-' + s);
-  if (isChamp && champStreak > 0) {
-    badge.textContent = '👑 卫冕';
-    badge.style.display = 'block';
-  } else if (!isChamp) {
-    badge.textContent = '挑战者';
-    badge.style.display = 'block';
-  } else {
-    badge.style.display = 'none';
-  }
-  const card = document.getElementById('card-' + s);
-  card.classList.remove('anim-winner','anim-fly-right','anim-fly-left','anim-enter','champion-card');
-  if (isChamp && champStreak > 0) card.classList.add('champion-card');
+  document.getElementById('emoji-' + side).textContent = f.emoji;
+  document.getElementById('name-'  + side).textContent = f.name;
+  document.getElementById('elo-'   + side).textContent = 'ELO ' + f.elo;
+  document.getElementById('cat-'   + side).textContent = f.cat;
+  const winsEl = document.getElementById('wins-' + side);
+  winsEl.textContent = (isChamp && champStreak > 0) ? '🔥 连胜 ' + champStreak + ' 场' : '';
+  const badge = document.getElementById('badge-' + side);
+  if (isChamp && champStreak > 0) { badge.textContent = '👑 卫冕'; badge.style.display = 'block'; }
+  else if (!isChamp)               { badge.textContent = '挑战者';  badge.style.display = 'block'; }
+  else                             { badge.style.display = 'none'; }
+  const card = document.getElementById('card-' + side);
+  card.classList.toggle('champion-card', isChamp && champStreak > 0);
 }
 
 function updateStreakBar() {
-  for (let i = 0; i < 5; i++) {
-    const dot = document.getElementById('dot' + i);
-    dot.classList.toggle('filled', i < champStreak);
-  }
-  document.getElementById('streak-label').textContent = champStreak + ' / 5';
+  for (let i = 0; i < 5; i++)
+    document.getElementById('dot' + i).classList.toggle('filled', i < champStreak);
+  document.getElementById('streak-label').textContent  = champStreak + ' / 5';
   document.getElementById('battle-status').textContent = '已对战 ' + totalBattles + ' 次';
 }
 
@@ -492,64 +476,46 @@ function chooseSide(side) {
   if (busy) return;
   busy = true;
 
-  const leftWins = side === 'left';
-  const winIdx  = leftWins ? champIdx : challIdx;
-  const loseIdx = leftWins ? challIdx : champIdx;
-  const winSide  = leftWins ? 'left'  : 'right';
+  const leftWins = (side === 'left');
+  const winIdx   = leftWins ? champIdx : challIdx;
+  const loseIdx  = leftWins ? challIdx : champIdx;
+  const winSide  = leftWins ? 'left' : 'right';
   const loseSide = leftWins ? 'right' : 'left';
 
   updateElo(winIdx, loseIdx);
   totalBattles++;
   save();
 
-  // 强制 reflow，让 CSS 动画可以在同一元素上重播
   const winCard  = document.getElementById('card-' + winSide);
   const loseCard = document.getElementById('card-' + loseSide);
-  winCard.classList.remove('anim-winner', 'anim-fly-right', 'anim-fly-left', 'anim-enter');
-  loseCard.classList.remove('anim-winner', 'anim-fly-right', 'anim-fly-left', 'anim-enter');
-  void winCard.offsetWidth;   // force reflow
-  void loseCard.offsetWidth;  // force reflow
 
-  winCard.classList.add('anim-winner');
-  loseCard.classList.add(loseSide === 'right' ? 'anim-fly-right' : 'anim-fly-left');
+  // 胜者脉冲，败者飞出（Web Animations API，每次调用都是全新动画实例）
+  animPulse(winCard);
+  const flyAnim = animFly(loseCard, loseSide === 'right');
 
-  if (leftWins) {
-    // Left (champ) wins → stays left, new challenger on right
-    champStreak++;
-    updateStreakBar();
-    if (champStreak >= 5) {
-      setTimeout(showChampion, 520);
-      return;
+  flyAnim.onfinish = () => {
+    if (leftWins) {
+      champStreak++;
+      updateStreakBar();
+      if (champStreak >= 5) { showChampion(); return; }
+      // 胜者留在左边，换新挑战者到右边
+      challIdx = getRandomIdx([champIdx]);
+      renderCard('left',  champIdx, true);
+      renderCard('right', challIdx, false);
+      animEnter(loseCard);  // 新挑战者从右边滑入
+    } else {
+      // 挑战者胜 → 移到左边成为新卫冕，换新挑战者
+      champIdx = challIdx;
+      champStreak = 1;
+      updateStreakBar();
+      challIdx = getRandomIdx([champIdx]);
+      renderCard('left',  champIdx, true);
+      renderCard('right', challIdx, false);
+      animEnter(document.getElementById('card-left'));
+      animEnter(document.getElementById('card-right'));
     }
-    setTimeout(() => {
-      challIdx = getRandomIdx([champIdx]);
-      renderCard('right', challIdx, false);
-      void document.getElementById('card-right').offsetWidth;
-      document.getElementById('card-right').classList.add('anim-enter');
-      document.getElementById('card-left').classList.remove('anim-winner','champion-card');
-      void document.getElementById('card-left').offsetWidth;
-      document.getElementById('card-left').classList.add('champion-card');
-      document.getElementById('badge-left').textContent = '👑 卫冕';
-      document.getElementById('badge-left').style.display = 'block';
-      document.getElementById('wins-left').textContent = '🔥 连胜 ' + champStreak + ' 场';
-      busy = false;
-    }, 520);
-  } else {
-    // Right (challenger) wins → new champ, moves to left, new challenger on right
-    champIdx = challIdx;
-    champStreak = 1;
-    updateStreakBar();
-    setTimeout(() => {
-      challIdx = getRandomIdx([champIdx]);
-      renderCard('left', champIdx, true);
-      void document.getElementById('card-left').offsetWidth;
-      document.getElementById('card-left').classList.add('anim-enter');
-      renderCard('right', challIdx, false);
-      void document.getElementById('card-right').offsetWidth;
-      document.getElementById('card-right').classList.add('anim-enter');
-      busy = false;
-    }, 520);
-  }
+    busy = false;
+  };
 }
 
 function skipBattle() {
@@ -567,14 +533,15 @@ function showChampion() {
 }
 
 function continueWithChamp() {
-  // Champ keeps going, reset streak counter but keep champ
   document.getElementById('champion-overlay').classList.remove('show');
   champStreak = 0;
   challIdx = getRandomIdx([champIdx]);
   renderCard('left', champIdx, true);
   document.getElementById('wins-left').textContent = '前冠军继续！';
   renderCard('right', challIdx, false);
+  animEnter(document.getElementById('card-right'));
   updateStreakBar();
+  busy = false;
 }
 
 function resetBattle() {
